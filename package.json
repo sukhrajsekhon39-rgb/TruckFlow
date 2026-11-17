@@ -1,0 +1,13 @@
+{
+  "name": "truckflow",
+  "version": "1.0.0",
+  "description": "Trucking company load management system",
+  "scripts": {
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm start\"",
+    "start": "cd server && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
