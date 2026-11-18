@@ -69,18 +69,34 @@ function LoadModal({ load, onClose, onSaved, drivers, trucks, trailers, brokers 
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-  const calculateMiles = async () => {
-    const pickup = `${form['pickup.address']} ${form['pickup.city']} ${form['pickup.state']}`.trim();
-    const delivery = `${form['delivery.address']} ${form['delivery.city']} ${form['delivery.state']}`.trim();
-    if (!pickup || !delivery) { toast.error('Enter pickup and delivery addresses first'); return; }
+  const [milesEdited, setMilesEdited] = useState(!!load?.miles);
+
+  const calculateMiles = async (silent = false) => {
+    const pickup = { address: form['pickup.address'], city: form['pickup.city'], state: form['pickup.state'], zip: form['pickup.zip'] };
+    const delivery = { address: form['delivery.address'], city: form['delivery.city'], state: form['delivery.state'], zip: form['delivery.zip'] };
+    const ok = p => (p.city && p.state) || p.zip.length >= 5;
+    if (!ok(pickup) || !ok(delivery)) {
+      if (!silent) toast.error('Enter city & state (or ZIP) for pickup and delivery');
+      return;
+    }
     setCalcMiles(true);
     try {
-      const res = await milesApi.calculate({ pickupAddress: pickup, deliveryAddress: delivery });
+      const res = await milesApi.calculate({ pickup, delivery });
       set('miles', res.data.miles);
-      toast.success(`${res.data.miles} miles · ${res.data.hours}h drive`);
-    } catch { toast.error('Could not calculate miles'); }
-    finally { setCalcMiles(false); }
+      if (!silent) toast.success(`${res.data.miles} miles · ${res.data.hours}h drive${res.data.estimated ? ' (estimate)' : ''}`);
+    } catch (err) {
+      if (!silent) toast.error(err.response?.data?.error || 'Could not calculate miles');
+    } finally { setCalcMiles(false); }
   };
+
+  // Auto-calculate 1.5s after the location fields stop changing
+  useEffect(() => {
+    if (milesEdited) return;
+    const t = setTimeout(() => calculateMiles(true), 1500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form['pickup.city'], form['pickup.state'], form['pickup.zip'],
+      form['delivery.city'], form['delivery.state'], form['delivery.zip']]);
 
   const handleSubmit = async () => {
     setSaving(true);
