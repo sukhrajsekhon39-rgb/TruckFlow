@@ -94,7 +94,6 @@ function LoadModal({ load, onClose, onSaved, drivers, trucks, trailers, brokers 
     if (milesEdited) return;
     const t = setTimeout(() => calculateMiles(true), 1500);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form['pickup.city'], form['pickup.state'], form['pickup.zip'],
       form['delivery.city'], form['delivery.state'], form['delivery.zip']]);
 
