@@ -33,9 +33,9 @@ const loadSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 loadSchema.pre('save', function(next) {
-  if (this.rate && this.miles && this.miles > 0) {
-    this.ratePerMile = parseFloat((this.rate / this.miles).toFixed(2));
-  }
+  this.ratePerMile = this.rate > 0 && this.miles > 0
+    ? parseFloat((this.rate / this.miles).toFixed(2))
+    : 0;
   next();
 });
 
