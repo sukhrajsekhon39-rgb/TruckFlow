@@ -79,4 +79,8 @@ export const milesApi = {
   calculate: (data) => api.post('/miles/calculate', data),
 };
 
+export const placesApi = {
+  autocomplete: (q) => api.get('/places/autocomplete', { params: { q } }),
+};
+
 export default api;
