@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { loadsApi, driversApi, trucksApi, trailersApi, brokersApi, milesApi } from '../utils/api';
 import { Plus, Search, Filter, Trash2, Eye, MapPin, Navigation, Package, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { format } from 'date-fns';
+import AddressAutocomplete from '../components/AddressAutocomplete';
 
 const STATUS_OPTIONS = ['Pending', 'In Transit', 'Delivered', 'Invoiced', 'Paid'];
 
@@ -189,7 +190,17 @@ function LoadModal({ load, onClose, onSaved, drivers, trucks, trailers, brokers 
             </div>
             <G cols="1fr 1fr" gap={10} isMobile={isMobile}>
               <F label="Address">
-                <input className="form-control" value={form['pickup.address']} onChange={e => set('pickup.address', e.target.value)} />
+                <AddressAutocomplete
+                  value={form['pickup.address']}
+                  onChange={v => set('pickup.address', v)}
+                  onPick={s => setForm(f => ({
+                    ...f,
+                    ...(s.address ? { 'pickup.address': s.address } : {}),
+                    'pickup.city': s.city || f['pickup.city'],
+                    'pickup.state': s.state || f['pickup.state'],
+                    'pickup.zip': s.zip || f['pickup.zip'],
+                  }))}
+                />
               </F>
               <F label="Scheduled Time">
                 <input type="datetime-local" className="form-control" value={form['pickup.scheduledTime']} onChange={e => set('pickup.scheduledTime', e.target.value)} />
@@ -218,7 +229,17 @@ function LoadModal({ load, onClose, onSaved, drivers, trucks, trailers, brokers 
             </div>
             <G cols="1fr 1fr" gap={10} isMobile={isMobile}>
               <F label="Address">
-                <input className="form-control" value={form['delivery.address']} onChange={e => set('delivery.address', e.target.value)} />
+                <AddressAutocomplete
+                  value={form['delivery.address']}
+                  onChange={v => set('delivery.address', v)}
+                  onPick={s => setForm(f => ({
+                    ...f,
+                    ...(s.address ? { 'delivery.address': s.address } : {}),
+                    'delivery.city': s.city || f['delivery.city'],
+                    'delivery.state': s.state || f['delivery.state'],
+                    'delivery.zip': s.zip || f['delivery.zip'],
+                  }))}
+                />
               </F>
               <F label="Scheduled Time">
                 <input type="datetime-local" className="form-control" value={form['delivery.scheduledTime']} onChange={e => set('delivery.scheduledTime', e.target.value)} />
