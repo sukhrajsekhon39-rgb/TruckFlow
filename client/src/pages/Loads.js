@@ -242,9 +242,9 @@ function LoadModal({ load, onClose, onSaved, drivers, trucks, trailers, brokers 
           {/* Miles */}
           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 10, alignItems: isMobile ? 'stretch' : 'flex-end' }}>
             <F label="Miles">
-              <input type="number" className="form-control" value={form.miles} onChange={e => set('miles', e.target.value)} placeholder="0" />
+              <input type="number" className="form-control" value={form.miles} onChange={e => { setMilesEdited(true); set('miles', e.target.value); }} placeholder="0" />
             </F>
-            <button className="btn btn-secondary" onClick={calculateMiles} disabled={calcMiles} style={{ flexShrink: 0, marginBottom: isMobile ? 0 : 2 }}>
+            <button className="btn btn-secondary" onClick={() => { setMilesEdited(false); calculateMiles(false); }} disabled={calcMiles} style={{ flexShrink: 0, marginBottom: isMobile ? 0 : 2 }}>
               {calcMiles ? <div className="spinner" /> : <Navigation size={15} />}
               {calcMiles ? 'Calculating...' : 'Auto-calculate Miles'}
             </button>
