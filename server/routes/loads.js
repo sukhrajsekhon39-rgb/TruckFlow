@@ -73,10 +73,12 @@ router.post('/', async (req, res) => {
 // PUT update load
 router.put('/:id', async (req, res) => {
   try {
-    const load = await Load.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
-      .populate('driver').populate('truck').populate('trailer').populate('broker');
+    const load = await Load.findById(req.params.id);
     if (!load) return res.status(404).json({ error: 'Load not found' });
-    res.json(load);
+    load.set(req.body);
+    await load.save(); // runs validation and recalculates ratePerMile
+    const populated = await load.populate(['driver', 'truck', 'trailer', 'broker']);
+    res.json(populated);
   } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
