@@ -25,6 +25,16 @@ app.use('/api/invoices',  auth, require('./routes/invoices'));
 app.use('/api/miles',     auth, require('./routes/miles'));
 app.use('/api/gmail',     auth, require('./routes/gmail'));
 
+// Serve React build in production
+const clientBuild = path.join(__dirname, '../client/build');
+app.use(express.static(clientBuild));
+
+// Let React Router handle every non-API route
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next();
+  res.sendFile(path.join(clientBuild, 'index.html'));
+});
+
 // MongoDB
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/truckflow';
 mongoose.connect(MONGO_URI)
