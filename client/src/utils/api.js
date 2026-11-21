@@ -69,6 +69,7 @@ export const brokersApi = {
 
 export const analyticsApi = {
   getSummary: (params) => api.get('/analytics/summary', { params }),
+  getRange: (params) => api.get('/analytics/range', { params }),
 };
 
 export const invoicesApi = {
