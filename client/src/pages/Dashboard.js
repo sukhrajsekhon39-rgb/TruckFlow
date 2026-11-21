@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { loadsApi, analyticsApi, driversApi } from '../utils/api';
-import { DollarSign, Route, Package, TrendingUp, Clock, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, parse, startOfDay, startOfWeek, startOfMonth, addDays, addWeeks, addMonths, differenceInCalendarDays } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { Link, useNavigate } from 'react-router-dom';
+import { analyticsApi, driversApi } from '../utils/api';
+import { DollarSign, Route, Package, TrendingUp, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { format, parse, startOfDay, startOfWeek, startOfMonth, addDays, addWeeks, addMonths } from 'date-fns';
 
 function StatusBadge({ status }) {
   const map = { 'Pending': 'badge-pending', 'In Transit': 'badge-transit', 'Delivered': 'badge-delivered', 'Invoiced': 'badge-invoiced', 'Paid': 'badge-paid' };
@@ -40,24 +39,9 @@ function rangeFor(mode, anchor, from, to) {
   return { start: startOfDay(f), end: addDays(startOfDay(t), 1) };
 }
 
-// Revenue per day (or per week for long custom ranges) for the bar chart
-function buildBuckets(loads, start, end, mode, dateOf) {
-  const n = differenceInCalendarDays(end, start);
-  const step = n <= 45 ? 1 : 7;
-  const fmt = mode === 'week' ? 'EEE' : mode === 'month' ? 'd' : 'M/d';
-  const buckets = [];
-  for (let i = 0; i < n; i += step) {
-    buckets.push({ day: format(addDays(start, i), fmt), Revenue: 0, s: addDays(start, i), e: addDays(start, Math.min(i + step, n)) });
-  }
-  loads.forEach(l => {
-    const d = dateOf(l);
-    const b = buckets.find(x => d >= x.s && d < x.e);
-    if (b) b.Revenue += l.rate || 0;
-  });
-  return buckets.map(({ day, Revenue }) => ({ day, Revenue }));
-}
-
+// Totals + filtered loads for a week / month / custom range
 function WorkSummary({ isMobile }) {
+  const navigate = useNavigate();
   const [mode, setMode] = useState('week'); // 'week' | 'month' | 'custom'
   const [anchor, setAnchor] = useState(() => new Date());
   const [from, setFrom] = useState(() => format(startOfMonth(new Date()), 'yyyy-MM-dd'));
@@ -69,7 +53,6 @@ function WorkSummary({ isMobile }) {
   const [loads, setLoads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [showLoads, setShowLoads] = useState(false);
 
   const range = rangeFor(mode, anchor, from, to);
   const startMs = range ? range.start.getTime() : 0;
@@ -112,22 +95,10 @@ function WorkSummary({ isMobile }) {
   const dateOf = l =>
     new Date((by === 'delivery' ? l.delivery?.scheduledTime : l.pickup?.scheduledTime) || l.createdAt);
 
+  const sorted = [...loads].sort((a, b) => dateOf(b) - dateOf(a)); // newest first
   const revenue = loads.reduce((s, l) => s + (l.rate || 0), 0);
   const miles = loads.reduce((s, l) => s + (l.miles || 0), 0);
   const unpaid = loads.filter(l => l.status !== 'Paid').reduce((s, l) => s + (l.rate || 0), 0);
-
-  const chart = range ? buildBuckets(loads, range.start, range.end, mode, dateOf) : [];
-
-  const driverMap = {};
-  loads.forEach(l => {
-    const key = l.driver?._id || 'none';
-    if (!driverMap[key]) driverMap[key] = { name: l.driver?.name || 'Unassigned', loads: 0, miles: 0, revenue: 0 };
-    driverMap[key].loads += 1;
-    driverMap[key].miles += l.miles || 0;
-    driverMap[key].revenue += l.rate || 0;
-  });
-  const byDriver = Object.values(driverMap).sort((a, b) => b.revenue - a.revenue);
-  const showDrivers = !driver && byDriver.length > 0;
 
   const kpis = [
     { label: 'Revenue', value: money(revenue), color: 'orange' },
@@ -141,7 +112,7 @@ function WorkSummary({ isMobile }) {
   const sel = { width: 'auto', minWidth: 130, padding: '6px 10px', fontSize: 13 };
 
   return (
-    <div style={{ marginBottom: 24 }}>
+    <div style={{ marginBottom: 28 }}>
       {/* Title + period controls */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
         <div>
@@ -198,6 +169,7 @@ function WorkSummary({ isMobile }) {
         <div className="card" style={{ display: 'flex', justifyContent: 'center', padding: 30 }}><div className="spinner" /></div>
       ) : (
         <>
+          {/* Totals for the selection */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(6, 1fr)', gap: isMobile ? 10 : 14, marginBottom: 14 }}>
             {kpis.map(k => (
               <div key={k.label} className={`stat-card ${k.color}`}>
@@ -207,75 +179,82 @@ function WorkSummary({ isMobile }) {
             ))}
           </div>
 
-          {loads.length === 0 ? (
-            <div className="card" style={{ color: 'var(--text-muted)', fontSize: 13, textAlign: 'center' }}>No loads in this period</div>
-          ) : (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile || !showDrivers ? '1fr' : '1fr 280px', gap: 14, marginBottom: 14 }}>
-                <div className="card" style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14 }}>Revenue by {differenceInCalendarDays(range.end, range.start) > 45 ? 'Week' : 'Day'}</div>
-                  <ResponsiveContainer width="100%" height={170}>
-                    <BarChart data={chart}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis dataKey="day" stroke="var(--text-muted)" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
-                      <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} tickFormatter={v => `$${v}`} width={52} />
-                      <Tooltip
-                        formatter={v => [money(v), 'Revenue']}
-                        contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 13 }}
-                      />
-                      <Bar dataKey="Revenue" fill="var(--accent)" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {showDrivers && (
-                  <div className="card">
-                    <div style={{ fontWeight: 600, marginBottom: 14, fontSize: 14 }}>By Driver</div>
-                    {byDriver.map(d => (
-                      <div key={d.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.name}</div>
-                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                            {d.loads} load{d.loads > 1 ? 's' : ''} · {d.miles.toLocaleString()} mi{d.miles ? ` · $${(d.revenue / d.miles).toFixed(2)}/mi` : ''}
-                          </div>
-                        </div>
-                        <span style={{ color: 'var(--green)', fontWeight: 600, fontSize: 13, flexShrink: 0, marginLeft: 8 }}>{money(d.revenue)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+          {/* Loads for the selection */}
+          <div className="card" style={{ padding: 0, minWidth: 0 }}>
+            <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="section-title" style={{ fontSize: 15 }}>
+                <Package size={15} color="var(--accent)" /> Loads
+                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 13, marginLeft: 6 }}>{sorted.length}</span>
               </div>
+              <Link to="/loads" className="btn btn-ghost btn-sm">View all →</Link>
+            </div>
 
-              <button className="btn btn-secondary btn-sm" onClick={() => setShowLoads(v => !v)} style={{ marginBottom: showLoads ? 10 : 0 }}>
-                {showLoads ? 'Hide loads' : `Show the ${loads.length} load${loads.length > 1 ? 's' : ''}`}
-              </button>
-              {showLoads && (
-                <div className="card" style={{ padding: 0 }}>
-                  <div className="table-container">
-                    <table>
-                      <thead>
-                        <tr><th>{by === 'delivery' ? 'Delivery' : 'Pickup'}</th><th>Load #</th><th>Route</th><th>Driver</th><th>Miles</th><th>Rate</th><th>$/Mile</th><th>Status</th></tr>
-                      </thead>
-                      <tbody>
-                        {loads.map(l => (
-                          <tr key={l._id}>
-                            <td>{format(dateOf(l), 'EEE MMM d')}</td>
-                            <td><Link to={`/loads/${l._id}`} className="mono" style={{ color: 'var(--accent)', fontWeight: 600 }}>{l.loadNumber}</Link></td>
-                            <td>{l.pickup?.city || '—'} → {l.delivery?.city || '—'}</td>
-                            <td>{l.driver?.name || '—'}</td>
-                            <td>{l.miles ? l.miles.toLocaleString() : '—'}</td>
-                            <td>{money(l.rate)}</td>
-                            <td>{l.miles ? `$${(l.rate / l.miles).toFixed(2)}` : '—'}</td>
-                            <td><StatusBadge status={l.status} /></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+            {isMobile ? (
+              <div style={{ padding: '8px 0' }}>
+                {sorted.length === 0 ? (
+                  <div className="empty-state"><p>No loads in this period</p></div>
+                ) : sorted.map(load => (
+                  <div
+                    key={load._id}
+                    onClick={() => navigate(`/loads/${load._id}`)}
+                    style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}
+                  >
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span className="mono" style={{ color: 'var(--accent)', fontSize: 13, fontWeight: 600 }}>{load.loadNumber}</span>
+                        <StatusBadge status={load.status} />
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {load.pickup?.city || '—'}{load.delivery?.city ? ` → ${load.delivery.city}` : ''}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                        {format(dateOf(load), 'EEE MMM d')}{load.miles ? ` · ${load.miles.toLocaleString()} mi` : ''}{load.driver?.name ? ` · ${load.driver.name}` : ''}
+                      </div>
+                    </div>
+                    <div style={{ color: 'var(--green)', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>
+                      ${(load.rate || 0).toLocaleString()}
+                    </div>
                   </div>
-                </div>
-              )}
-            </>
-          )}
+                ))}
+              </div>
+            ) : (
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{by === 'delivery' ? 'Delivery' : 'Pickup'}</th>
+                      <th>Load #</th>
+                      <th>Driver</th>
+                      <th>Route</th>
+                      <th>Miles</th>
+                      <th>Rate</th>
+                      <th>$/Mile</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sorted.length === 0 ? (
+                      <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No loads in this period</td></tr>
+                    ) : sorted.map(load => (
+                      <tr key={load._id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/loads/${load._id}`)}>
+                        <td style={{ whiteSpace: 'nowrap' }}>{format(dateOf(load), 'EEE MMM d')}</td>
+                        <td><span className="mono" style={{ color: 'var(--accent)' }}>{load.loadNumber}</span></td>
+                        <td>{load.driver?.name || '—'}</td>
+                        <td style={{ fontSize: 12 }}>
+                          {load.pickup?.city || '—'}
+                          {load.delivery?.city ? <span style={{ color: 'var(--text-muted)' }}> → {load.delivery.city}</span> : ''}
+                        </td>
+                        <td>{load.miles ? load.miles.toLocaleString() : '—'}</td>
+                        <td style={{ color: 'var(--green)', fontWeight: 600 }}>${(load.rate || 0).toLocaleString()}</td>
+                        <td>{load.miles ? `$${(load.rate / load.miles).toFixed(2)}` : '—'}</td>
+                        <td><StatusBadge status={load.status} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>
@@ -284,18 +263,14 @@ function WorkSummary({ isMobile }) {
 
 export default function Dashboard() {
   const [analytics, setAnalytics] = useState(null);
-  const [recentLoads, setRecentLoads] = useState([]);
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    Promise.all([
-      analyticsApi.getSummary(),
-      loadsApi.getAll({ limit: 8 }),
-    ]).then(([aRes, lRes]) => {
-      setAnalytics(aRes.data);
-      setRecentLoads(lRes.data.slice(0, 8));
-    }).finally(() => setLoading(false));
+    analyticsApi.getSummary()
+      .then(res => setAnalytics(res.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="page-loader"><div className="spinner" /></div>;
@@ -303,7 +278,8 @@ export default function Dashboard() {
   const t = analytics?.totals || {};
   const now = new Date();
   const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening';
-  const pendingInvoice = recentLoads.filter(l => l.status === 'Delivered').length;
+  // Counts every delivered load, not just the most recent few
+  const pendingInvoice = (analytics?.statusBreakdown || []).find(s => s._id === 'Delivered')?.count || 0;
 
   return (
     <div className="page-enter">
@@ -329,10 +305,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Work summary: week / month / custom, with filters */}
+      {/* Week / month / custom summary, filters and loads */}
       <WorkSummary isMobile={isMobile} />
 
-      {/* Stats */}
+      {/* All-time stats */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fit, minmax(180px, 1fr))',
@@ -360,117 +336,34 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Main content — stacks on mobile */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : '1fr 280px',
-        gap: 20,
-      }}>
-        {/* Recent loads */}
-        <div className="card" style={{ padding: 0, minWidth: 0 }}>
-          <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div className="section-title" style={{ fontSize: 15 }}>
-              <Clock size={15} color="var(--accent)" /> Recent Loads
+      {/* Status + top drivers (all time) */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
+        <div className="card">
+          <div style={{ fontWeight: 600, marginBottom: 14, fontSize: 14 }}>Load Status</div>
+          {(analytics?.statusBreakdown || []).map(s => (
+            <div key={s._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <StatusBadge status={s._id} />
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span style={{ fontWeight: 600, fontSize: 14 }}>{s.count}</span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>${(s.revenue || 0).toLocaleString()}</span>
+              </div>
             </div>
-            <Link to="/loads" className="btn btn-ghost btn-sm">View all →</Link>
-          </div>
-          {/* Mobile: card list instead of table */}
-          {isMobile ? (
-            <div style={{ padding: '8px 0' }}>
-              {recentLoads.length === 0 ? (
-                <div className="empty-state"><p>No loads yet</p></div>
-              ) : recentLoads.map(load => (
-                <div
-                  key={load._id}
-                  onClick={() => window.location.href = `/loads/${load._id}`}
-                  style={{
-                    padding: '12px 16px',
-                    borderBottom: '1px solid var(--border)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 10,
-                  }}
-                >
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span className="mono" style={{ color: 'var(--accent)', fontSize: 13, fontWeight: 600 }}>{load.loadNumber}</span>
-                      <StatusBadge status={load.status} />
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {load.pickup?.city || '—'}{load.delivery?.city ? ` → ${load.delivery.city}` : ''}
-                    </div>
-                    {load.driver?.name && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{load.driver.name}</div>}
-                  </div>
-                  <div style={{ color: 'var(--green)', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>
-                    ${(load.rate || 0).toLocaleString()}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Load #</th>
-                    <th>Driver</th>
-                    <th>Route</th>
-                    <th>Rate</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentLoads.length === 0 ? (
-                    <tr><td colSpan={5} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No loads yet</td></tr>
-                  ) : recentLoads.map(load => (
-                    <tr key={load._id} style={{ cursor: 'pointer' }} onClick={() => window.location.href = `/loads/${load._id}`}>
-                      <td><span className="mono" style={{ color: 'var(--accent)' }}>{load.loadNumber}</span></td>
-                      <td>{load.driver?.name || '—'}</td>
-                      <td style={{ fontSize: 12 }}>
-                        {load.pickup?.city || '—'}
-                        {load.delivery?.city ? <span style={{ color: 'var(--text-muted)' }}> → {load.delivery.city}</span> : ''}
-                      </td>
-                      <td style={{ color: 'var(--green)', fontWeight: 600 }}>${(load.rate || 0).toLocaleString()}</td>
-                      <td><StatusBadge status={load.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          ))}
+          {!analytics?.statusBreakdown?.length && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No data yet</p>}
         </div>
 
-        {/* Sidebar cards — always full width on mobile */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div className="card">
-            <div style={{ fontWeight: 600, marginBottom: 14, fontSize: 14 }}>Load Status</div>
-            {(analytics?.statusBreakdown || []).map(s => (
-              <div key={s._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <StatusBadge status={s._id} />
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span style={{ fontWeight: 600, fontSize: 14 }}>{s.count}</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>${(s.revenue || 0).toLocaleString()}</span>
-                </div>
+        <div className="card">
+          <div style={{ fontWeight: 600, marginBottom: 14, fontSize: 14 }}>Top Drivers</div>
+          {(analytics?.topDrivers || []).slice(0, 4).map(d => (
+            <div key={d._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.loads} loads · {(d.miles || 0).toLocaleString()} mi</div>
               </div>
-            ))}
-            {!analytics?.statusBreakdown?.length && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No data yet</p>}
-          </div>
-
-          <div className="card">
-            <div style={{ fontWeight: 600, marginBottom: 14, fontSize: 14 }}>Top Drivers</div>
-            {(analytics?.topDrivers || []).slice(0, 4).map(d => (
-              <div key={d._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.name}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.loads} loads · {(d.miles || 0).toLocaleString()} mi</div>
-                </div>
-                <span style={{ color: 'var(--green)', fontWeight: 600, fontSize: 13, flexShrink: 0, marginLeft: 8 }}>${(d.revenue || 0).toLocaleString()}</span>
-              </div>
-            ))}
-            {!analytics?.topDrivers?.length && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No data yet</p>}
-          </div>
+              <span style={{ color: 'var(--green)', fontWeight: 600, fontSize: 13, flexShrink: 0, marginLeft: 8 }}>${(d.revenue || 0).toLocaleString()}</span>
+            </div>
+          ))}
+          {!analytics?.topDrivers?.length && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No data yet</p>}
         </div>
       </div>
     </div>
