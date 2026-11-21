@@ -92,4 +92,49 @@ router.get('/summary', async (req, res) => {
   }
 });
 
+const STATUSES = ['Pending', 'In Transit', 'Delivered', 'Invoiced', 'Paid'];
+
+// Loads in a date range, with optional driver and status filters.
+// The browser sends the exact start/end in its own timezone.
+router.get('/range', async (req, res) => {
+  try {
+    const s = new Date(String(req.query.start));
+    const e = new Date(String(req.query.end));
+    if (isNaN(s) || isNaN(e)) return res.status(400).json({ error: 'Invalid start or end date' });
+
+    const field = req.query.by === 'delivery' ? 'delivery.scheduledTime' : 'pickup.scheduledTime';
+    const query = {
+      $or: [
+        { [field]: { $gte: s, $lt: e } },
+        { [field]: null, createdAt: { $gte: s, $lt: e } }, // no scheduled date -> use created date
+      ],
+    };
+
+    const driver = req.query.driver ? String(req.query.driver) : '';
+    if (driver === 'none') query.driver = null;
+    else if (driver) {
+      if (!mongoose.isValidObjectId(driver)) return res.status(400).json({ error: 'Invalid driver' });
+      query.driver = driver;
+    }
+
+    const status = req.query.status ? String(req.query.status) : '';
+    if (status === 'unpaid') query.status = { $ne: 'Paid' };
+    else if (status) {
+      if (!STATUSES.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+      query.status = status;
+    }
+
+    const loads = await Load.find(query)
+      .populate('driver', 'name')
+      .populate('broker', 'name')
+      .populate('truck', 'unitNumber')
+      .sort({ [field]: 1, createdAt: 1 })
+      .lean();
+
+    res.json({ loads });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
