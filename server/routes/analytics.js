@@ -94,7 +94,7 @@ router.get('/summary', async (req, res) => {
 
 const STATUSES = ['Pending', 'In Transit', 'Delivered', 'Invoiced', 'Paid'];
 
-// Loads in a date range, with optional driver and status filters.
+// Loads in a date range, with optional driver, broker and status filters.
 // The browser sends the exact start/end in its own timezone.
 router.get('/range', async (req, res) => {
   try {
@@ -117,8 +117,16 @@ router.get('/range', async (req, res) => {
       query.driver = driver;
     }
 
+    const broker = req.query.broker ? String(req.query.broker) : '';
+    if (broker === 'none') query.broker = null;
+    else if (broker) {
+      if (!mongoose.isValidObjectId(broker)) return res.status(400).json({ error: 'Invalid broker' });
+      query.broker = broker;
+    }
+
     const status = req.query.status ? String(req.query.status) : '';
     if (status === 'unpaid') query.status = { $ne: 'Paid' };
+    else if (status === 'owed') query.status = { $in: ['Delivered', 'Invoiced'] }; // delivered, waiting to be paid
     else if (status) {
       if (!STATUSES.includes(status)) return res.status(400).json({ error: 'Invalid status' });
       query.status = status;
