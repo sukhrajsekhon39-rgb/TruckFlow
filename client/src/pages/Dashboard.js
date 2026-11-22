@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { analyticsApi, driversApi } from '../utils/api';
-import { DollarSign, Route, Package, TrendingUp, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { analyticsApi } from '../utils/api';
+import { Package, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, parse, startOfDay, startOfWeek, startOfMonth, addDays, addWeeks, addMonths } from 'date-fns';
 
 function StatusBadge({ status }) {
@@ -20,7 +20,6 @@ function useIsMobile() {
 }
 
 const WEEK_OPTS = { weekStartsOn: 1 }; // 1 = Monday, change to 0 for Sunday
-const STATUS_OPTS = ['Pending', 'In Transit', 'Delivered', 'Invoiced', 'Paid'];
 const money = n => `$${Math.round(n || 0).toLocaleString()}`;
 
 // Start (inclusive) and end (exclusive) of the period being shown
@@ -46,10 +45,6 @@ function WorkSummary({ isMobile }) {
   const [anchor, setAnchor] = useState(() => new Date());
   const [from, setFrom] = useState(() => format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [to, setTo] = useState(() => format(new Date(), 'yyyy-MM-dd'));
-  const [by, setBy] = useState('pickup');
-  const [driver, setDriver] = useState('');
-  const [status, setStatus] = useState('');
-  const [drivers, setDrivers] = useState([]);
   const [loads, setLoads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -59,20 +54,16 @@ function WorkSummary({ isMobile }) {
   const endMs = range ? range.end.getTime() : 0;
 
   useEffect(() => {
-    driversApi.getAll().then(res => setDrivers(res.data || [])).catch(() => {});
-  }, []);
-
-  useEffect(() => {
     if (!range) { setLoads([]); setLoading(false); setError(false); return; }
     let cancelled = false;
     setLoading(true);
     setError(false);
-    analyticsApi.getRange({ start: range.start.toISOString(), end: range.end.toISOString(), by, driver, status })
+    analyticsApi.getRange({ start: range.start.toISOString(), end: range.end.toISOString(), by: 'pickup' })
       .then(res => { if (!cancelled) setLoads(res.data.loads || []); })
       .catch(() => { if (!cancelled) setError(true); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [startMs, endMs, by, driver, status]);
+  }, [startMs, endMs]);
 
   const now = new Date();
   const isCurrent = mode === 'week'
@@ -92,29 +83,27 @@ function WorkSummary({ isMobile }) {
 
   const step = dir => setAnchor(a => (mode === 'week' ? addWeeks(a, dir) : addMonths(a, dir)));
 
-  const dateOf = l =>
-    new Date((by === 'delivery' ? l.delivery?.scheduledTime : l.pickup?.scheduledTime) || l.createdAt);
+  const dateOf = l => new Date(l.pickup?.scheduledTime || l.createdAt);
 
   const sorted = [...loads].sort((a, b) => dateOf(b) - dateOf(a)); // newest first
   const revenue = loads.reduce((s, l) => s + (l.rate || 0), 0);
   const miles = loads.reduce((s, l) => s + (l.miles || 0), 0);
   const unpaid = loads.filter(l => l.status !== 'Paid').reduce((s, l) => s + (l.rate || 0), 0);
+  const milesRevenue = loads.filter(l => l.miles > 0).reduce((s, l) => s + (l.rate || 0), 0); // loads with unknown miles don't skew $/mile
 
   const kpis = [
     { label: 'Revenue', value: money(revenue), color: 'orange' },
     { label: 'Loads', value: loads.length, color: 'blue' },
     { label: 'Miles', value: miles.toLocaleString(), color: 'green' },
-    { label: 'Rev / Mile', value: miles ? `$${(revenue / miles).toFixed(2)}` : '—', color: 'purple' },
+    { label: 'Rev / Mile', value: miles ? `$${(milesRevenue / miles).toFixed(2)}` : '—', color: 'purple' },
     { label: 'Avg Rate', value: loads.length ? money(revenue / loads.length) : '—', color: 'blue' },
     { label: 'Unpaid', value: money(unpaid), color: 'orange' },
   ];
 
-  const sel = { width: 'auto', minWidth: 130, padding: '6px 10px', fontSize: 13 };
-
   return (
     <div style={{ marginBottom: 28 }}>
       {/* Title + period controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
         <div>
           <div style={{ fontSize: 17, fontWeight: 700 }}>{title}</div>
           <div style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 2 }}>{subtitle}</div>
@@ -133,33 +122,14 @@ function WorkSummary({ isMobile }) {
         </div>
       </div>
 
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
-        {mode === 'custom' && (
-          <>
-            <input type="date" className="form-control" style={{ ...sel, minWidth: 140 }} value={from} onChange={e => setFrom(e.target.value)} />
-            <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>to</span>
-            <input type="date" className="form-control" style={{ ...sel, minWidth: 140 }} value={to} onChange={e => setTo(e.target.value)} />
-          </>
-        )}
-        <select className="form-control" style={sel} value={driver} onChange={e => setDriver(e.target.value)}>
-          <option value="">All drivers</option>
-          {drivers.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
-          <option value="none">Unassigned</option>
-        </select>
-        <select className="form-control" style={sel} value={status} onChange={e => setStatus(e.target.value)}>
-          <option value="">All statuses</option>
-          <option value="unpaid">Unpaid (not Paid)</option>
-          {STATUS_OPTS.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
-        <select className="form-control" style={sel} value={by} onChange={e => setBy(e.target.value)}>
-          <option value="pickup">By pickup date</option>
-          <option value="delivery">By delivery date</option>
-        </select>
-        {(driver || status) && (
-          <button className="btn btn-ghost btn-sm" onClick={() => { setDriver(''); setStatus(''); }}>Clear filters</button>
-        )}
-      </div>
+      {/* Custom range pickers */}
+      {mode === 'custom' && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
+          <input type="date" className="form-control" style={{ width: 'auto', minWidth: 140, padding: '6px 10px', fontSize: 13 }} value={from} onChange={e => setFrom(e.target.value)} />
+          <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>to</span>
+          <input type="date" className="form-control" style={{ width: 'auto', minWidth: 140, padding: '6px 10px', fontSize: 13 }} value={to} onChange={e => setTo(e.target.value)} />
+        </div>
+      )}
 
       {!range ? (
         <div className="card" style={{ color: 'var(--text-muted)', fontSize: 13 }}>Choose a start date that is on or before the end date.</div>
@@ -208,7 +178,7 @@ function WorkSummary({ isMobile }) {
                         {load.pickup?.city || '—'}{load.delivery?.city ? ` → ${load.delivery.city}` : ''}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                        {format(dateOf(load), 'EEE MMM d')}{load.miles ? ` · ${load.miles.toLocaleString()} mi` : ''}{load.driver?.name ? ` · ${load.driver.name}` : ''}
+                        {format(dateOf(load), 'EEE MMM d')}{load.miles ? ` · ${load.miles.toLocaleString()} mi` : ''}{load.driver?.name ? ` · ${load.driver.name}` : ''}{load.broker?.name ? ` · ${load.broker.name}` : ''}
                       </div>
                     </div>
                     <div style={{ color: 'var(--green)', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>
@@ -222,9 +192,10 @@ function WorkSummary({ isMobile }) {
                 <table>
                   <thead>
                     <tr>
-                      <th>{by === 'delivery' ? 'Delivery' : 'Pickup'}</th>
+                      <th>Pickup</th>
                       <th>Load #</th>
                       <th>Driver</th>
+                      <th>Broker</th>
                       <th>Route</th>
                       <th>Miles</th>
                       <th>Rate</th>
@@ -234,12 +205,13 @@ function WorkSummary({ isMobile }) {
                   </thead>
                   <tbody>
                     {sorted.length === 0 ? (
-                      <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No loads in this period</td></tr>
+                      <tr><td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No loads in this period</td></tr>
                     ) : sorted.map(load => (
                       <tr key={load._id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/loads/${load._id}`)}>
                         <td style={{ whiteSpace: 'nowrap' }}>{format(dateOf(load), 'EEE MMM d')}</td>
                         <td><span className="mono" style={{ color: 'var(--accent)' }}>{load.loadNumber}</span></td>
                         <td>{load.driver?.name || '—'}</td>
+                        <td>{load.broker?.name || '—'}</td>
                         <td style={{ fontSize: 12 }}>
                           {load.pickup?.city || '—'}
                           {load.delivery?.city ? <span style={{ color: 'var(--text-muted)' }}> → {load.delivery.city}</span> : ''}
@@ -275,7 +247,6 @@ export default function Dashboard() {
 
   if (loading) return <div className="page-loader"><div className="spinner" /></div>;
 
-  const t = analytics?.totals || {};
   const now = new Date();
   const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening';
   // Counts every delivered load, not just the most recent few
@@ -307,34 +278,6 @@ export default function Dashboard() {
 
       {/* Week / month / custom summary, filters and loads */}
       <WorkSummary isMobile={isMobile} />
-
-      {/* All-time stats */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fit, minmax(180px, 1fr))',
-        gap: isMobile ? 10 : 14,
-        marginBottom: 24,
-      }}>
-        {[
-          { label: 'Total Revenue', value: `$${(t.totalRevenue || 0).toLocaleString()}`, sub: 'All time', color: 'orange', icon: <DollarSign size={18} color="var(--accent)" />, iconBg: 'var(--accent-dim)' },
-          { label: 'Total Loads', value: (t.totalLoads || 0).toLocaleString(), sub: 'All time', color: 'blue', icon: <Package size={18} color="var(--blue)" />, iconBg: 'var(--blue-dim)' },
-          { label: 'Total Miles', value: (t.totalMiles || 0).toLocaleString(), sub: 'All time', color: 'green', icon: <Route size={18} color="var(--green)" />, iconBg: 'var(--green-dim)' },
-          { label: 'Avg Rate/Mile', value: `$${(t.avgRatePerMile || 0).toFixed(2)}`, sub: 'All time avg', color: 'purple', icon: <TrendingUp size={18} color="var(--purple)" />, iconBg: 'rgba(139,92,246,0.15)' },
-        ].map(s => (
-          <div key={s.label} className={`stat-card ${s.color}`}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ minWidth: 0 }}>
-                <div className="stat-label">{s.label}</div>
-                <div className="stat-value" style={{ fontSize: isMobile ? 18 : 28 }}>{s.value}</div>
-                <div className="stat-sub">{s.sub}</div>
-              </div>
-              {!isMobile && (
-                <div style={{ padding: 8, background: s.iconBg, borderRadius: 8, flexShrink: 0 }}>{s.icon}</div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
 
       {/* Status + top drivers (all time) */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
