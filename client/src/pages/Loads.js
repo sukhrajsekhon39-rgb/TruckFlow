@@ -107,8 +107,8 @@ function LoadModal({ load, onClose, onSaved, drivers, trucks, trailers, brokers 
         trailer: form.trailer || undefined, broker: form.broker || undefined,
         rate: parseFloat(form.rate) || 0, miles: parseFloat(form.miles) || 0,
         commodity: form.commodity, weight: parseFloat(form.weight) || undefined, notes: form.notes,
-        pickup: { address: form['pickup.address'], city: form['pickup.city'], state: form['pickup.state'], zip: form['pickup.zip'], scheduledTime: form['pickup.scheduledTime'] || undefined },
-        delivery: { address: form['delivery.address'], city: form['delivery.city'], state: form['delivery.state'], zip: form['delivery.zip'], scheduledTime: form['delivery.scheduledTime'] || undefined },
+        pickup: { address: form['pickup.address'], city: form['pickup.city'], state: form['pickup.state'], zip: form['pickup.zip'], scheduledTime: form['pickup.scheduledTime'] ? new Date(form['pickup.scheduledTime']).toISOString() : undefined },
+        delivery: { address: form['delivery.address'], city: form['delivery.city'], state: form['delivery.state'], zip: form['delivery.zip'], scheduledTime: form['delivery.scheduledTime'] ? new Date(form['delivery.scheduledTime']).toISOString() : undefined },
       };
       if (isEdit) { await loadsApi.update(load._id, payload); toast.success('Load updated!'); }
       else { await loadsApi.create(payload); toast.success('Load created!'); }
