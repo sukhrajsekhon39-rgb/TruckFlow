@@ -24,14 +24,16 @@ export default function App() {
         position="top-right"
         toastOptions={{
           style: {
-            background: '#1e2535',
-            color: '#f1f5f9',
-            border: '1px solid #253045',
-            borderRadius: '10px',
-            fontSize: '14px',
+            background: 'var(--bg-card)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border-light)',
+            borderRadius: '14px',
+            fontSize: '13.5px',
+            padding: '12px 16px',
+            boxShadow: 'var(--shadow-lg)',
           },
-          success: { iconTheme: { primary: '#4ade80', secondary: '#1e2535' } },
-          error:   { iconTheme: { primary: '#f87171', secondary: '#1e2535' } },
+          success: { iconTheme: { primary: '#93C9A3', secondary: '#0A0A0B' } },
+          error:   { iconTheme: { primary: '#E99595', secondary: '#0A0A0B' } },
         }}
       />
       <Routes>

@@ -456,7 +456,7 @@ export default function Loads() {
                 {load.delivery?.city || '—'}{load.delivery?.state ? `, ${load.delivery.state}` : ''}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                   {load.driver?.name || 'No driver'} · {load.miles ? `${load.miles.toLocaleString()} mi` : '—'}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -501,15 +501,15 @@ export default function Loads() {
                     <td onClick={() => navigate(`/loads/${load._id}`)}>{load.driver?.name || '—'}</td>
                     <td onClick={() => navigate(`/loads/${load._id}`)}>
                       <div style={{ fontSize: 13 }}>{load.truck?.unitNumber || '—'}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{load.trailer?.unitNumber || '—'}</div>
+                      <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{load.trailer?.unitNumber || '—'}</div>
                     </td>
                     <td onClick={() => navigate(`/loads/${load._id}`)}>
                       <div style={{ fontSize: 13 }}>{load.pickup?.city || '—'}{load.pickup?.state ? `, ${load.pickup.state}` : ''}</div>
-                      {load.pickup?.scheduledTime && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{format(new Date(load.pickup.scheduledTime), 'MM/dd HH:mm')}</div>}
+                      {load.pickup?.scheduledTime && <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{format(new Date(load.pickup.scheduledTime), 'MM/dd HH:mm')}</div>}
                     </td>
                     <td onClick={() => navigate(`/loads/${load._id}`)}>
                       <div style={{ fontSize: 13 }}>{load.delivery?.city || '—'}{load.delivery?.state ? `, ${load.delivery.state}` : ''}</div>
-                      {load.delivery?.scheduledTime && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{format(new Date(load.delivery.scheduledTime), 'MM/dd HH:mm')}</div>}
+                      {load.delivery?.scheduledTime && <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{format(new Date(load.delivery.scheduledTime), 'MM/dd HH:mm')}</div>}
                     </td>
                     <td onClick={() => navigate(`/loads/${load._id}`)}>{load.miles ? load.miles.toLocaleString() : '—'}</td>
                     <td onClick={() => navigate(`/loads/${load._id}`)} style={{ color: 'var(--green)', fontWeight: 600 }}>{load.rate ? `$${load.rate.toLocaleString()}` : '—'}</td>

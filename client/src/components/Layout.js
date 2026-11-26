@@ -26,6 +26,37 @@ const mobileNavItems = [
   { path: '/settings',  icon: Settings,        label: 'Settings'  },
 ];
 
+// Sidebar palette — always obsidian so it reads as a frame in both themes
+const C = {
+  bg:      '#0A0A0B',
+  line:    'rgba(255,255,255,0.07)',
+  text:    '#F7F5F1',
+  dim:     '#CFCCC5',
+  faint:   '#ADAAA3',
+  gold:    '#D8BC86',
+  goldLine:'rgba(216,188,134,0.5)',
+  red:     '#E99595',
+};
+const SERIF = "'Instrument Serif', Georgia, serif";
+
+function initials(name) {
+  return (name || 'A').trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+}
+
+function LogoMark({ size = 40 }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: size * 0.28,
+      background: 'linear-gradient(145deg, #E6CC98 0%, #C9A86C 100%)',
+      boxShadow: '0 6px 18px -6px rgba(216,188,134,0.55), inset 0 1px 0 rgba(255,255,255,0.35)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0, color: '#0A0A0B',
+    }}>
+      <Zap size={size * 0.5} strokeWidth={2} fill="#0A0A0B" />
+    </div>
+  );
+}
+
 export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -47,52 +78,40 @@ export default function Layout() {
     window.location.href = '/login';
   };
 
-  // Sidebar is always dark — gives it strong visual separation in both modes
   const S = {
-    sidebar: {
-      background:   '#0f1520',
-      borderRight:  '1px solid #1e2d45',
-    },
-    logoArea: {
-      borderBottom: '1px solid #1e2d45',
-    },
     navLink: (active) => ({
-      display: 'flex', alignItems: 'center', gap: 11,
-      padding: '9px 12px',
-      borderRadius: '8px',
-      fontSize: 14,
-      fontWeight: active ? 600 : 400,
-      color: active ? '#f1f5f9' : '#8899aa',
-      background: active ? 'rgba(249,115,22,0.15)' : 'transparent',
-      transition: 'all 0.15s ease',
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: collapsed ? '11px 0' : '10px 14px',
+      justifyContent: collapsed ? 'center' : 'flex-start',
+      borderRadius: 10,
+      fontSize: 15,
+      fontWeight: active ? 600 : 500,
+      color: active ? C.text : C.dim,
+      background: active ? 'rgba(255,255,255,0.06)' : 'transparent',
+      transition: 'all 0.2s ease',
       cursor: 'pointer',
       textDecoration: 'none',
       position: 'relative',
-      overflow: 'hidden',
       whiteSpace: 'nowrap',
     }),
-    activeBar: {
-      position: 'absolute', left: 0, top: '18%',
-      height: '64%', width: 3,
-      background: '#f97316',
-      borderRadius: '0 3px 3px 0',
-    },
-    footer: {
-      borderTop: '1px solid #1e2d45',
+    activeDot: {
+      width: 6, height: 6, borderRadius: '50%',
+      background: C.gold, marginLeft: 'auto', flexShrink: 0,
     },
     footerBtn: {
       background: 'transparent',
       border: 'none',
       cursor: 'pointer',
-      display: 'flex', alignItems: 'center', gap: 10,
-      padding: '8px 12px',
-      borderRadius: 8,
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '9px 14px',
+      minHeight: 40,
+      borderRadius: 10,
       width: '100%',
-      color: '#8899aa',
-      fontSize: 13,
-      fontWeight: 400,
+      color: C.dim,
+      fontSize: 14,
+      fontWeight: 500,
       fontFamily: 'inherit',
-      transition: 'all 0.15s ease',
+      transition: 'all 0.2s ease',
     },
   };
 
@@ -100,12 +119,12 @@ export default function Layout() {
     <>
       <style>{`
         .sidebar-nav-link:hover {
-          background: rgba(255,255,255,0.06) !important;
-          color: #f1f5f9 !important;
+          background: rgba(255,255,255,0.04) !important;
+          color: ${C.text} !important;
         }
         .sidebar-footer-btn:hover {
-          background: rgba(255,255,255,0.07) !important;
-          color: #f1f5f9 !important;
+          background: rgba(255,255,255,0.04) !important;
+          color: ${C.text} !important;
         }
         @keyframes slideDown {
           from { opacity: 0; transform: translateY(-6px); }
@@ -116,13 +135,13 @@ export default function Layout() {
           .mobile-header   { display: flex !important; }
           .mobile-bottom-nav { display: flex !important; }
           .main-content {
-            padding: 16px 16px 90px !important;
-            margin-top: 56px !important;
+            padding: 20px 16px 96px !important;
+            margin-top: 60px !important;
           }
           .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
           .dashboard-two-col { grid-template-columns: 1fr !important; }
           .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
-          .stat-value { font-size: 20px !important; }
+          .stat-value { font-size: 28px !important; }
           .load-detail-grid { grid-template-columns: 1fr !important; }
           .analytics-grid { grid-template-columns: 1fr !important; }
           .page-header-row { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
@@ -131,13 +150,13 @@ export default function Layout() {
           .filter-row .search-bar { min-width: 100% !important; }
           .hide-mobile { display: none !important; }
           .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
-          .modal { max-width: 100% !important; width: 100% !important; border-radius: 16px 16px 0 0 !important; max-height: 92vh !important; }
+          .modal { max-width: 100% !important; width: 100% !important; border-radius: 22px 22px 0 0 !important; max-height: 92vh !important; }
           .modal-lg { max-width: 100% !important; }
           table { min-width: 560px; }
         }
         @media (max-width: 390px) {
           .stats-grid { grid-template-columns: 1fr !important; }
-          .main-content { padding: 12px 12px 90px !important; }
+          .main-content { padding: 16px 12px 96px !important; }
         }
       `}</style>
 
@@ -147,11 +166,12 @@ export default function Layout() {
         <aside
           className="desktop-sidebar"
           style={{
-            width: collapsed ? 64 : 216,
-            ...S.sidebar,
+            width: collapsed ? 76 : 248,
+            background: C.bg,
+            borderRight: `1px solid ${C.line}`,
             display: 'flex',
             flexDirection: 'column',
-            transition: 'width 0.28s cubic-bezier(0.4,0,0.2,1)',
+            transition: 'width 0.3s cubic-bezier(0.22,1,0.36,1)',
             flexShrink: 0,
             position: 'sticky',
             top: 0,
@@ -162,31 +182,20 @@ export default function Layout() {
         >
           {/* Logo */}
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '18px 14px',
-            minHeight: 62,
-            ...S.logoArea,
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: collapsed ? '28px 0 0' : '28px 26px 0',
+            justifyContent: collapsed ? 'center' : 'flex-start',
           }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 9,
-              background: '#f97316',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: '0 2px 8px rgba(249,115,22,0.4)',
-            }}>
-              <Zap size={17} color="white" fill="white" />
-            </div>
+            <LogoMark />
             {!collapsed && (
               <div style={{ overflow: 'hidden' }}>
-                <div style={{
-                  fontWeight: 700, fontSize: 15,
-                  color: '#f1f5f9',
-                  letterSpacing: '-0.02em',
-                  lineHeight: 1.2,
-                }}>
+                <div style={{ fontFamily: SERIF, fontSize: 28, lineHeight: 1, color: C.text }}>
                   TruckFlow
                 </div>
-                <div style={{ fontSize: 11, color: '#5a7080', marginTop: 1 }}>
+                <div style={{
+                  fontSize: 11, fontWeight: 600, color: C.faint, marginTop: 6,
+                  letterSpacing: '0.12em', textTransform: 'uppercase',
+                }}>
                   Fleet Management
                 </div>
               </div>
@@ -196,8 +205,8 @@ export default function Layout() {
           {/* Nav */}
           <nav style={{
             flex: 1,
-            padding: '10px 8px',
-            display: 'flex', flexDirection: 'column', gap: 1,
+            padding: '36px 16px 12px',
+            display: 'flex', flexDirection: 'column', gap: 2,
             overflowY: 'auto', overflowX: 'hidden',
           }}>
             {navItems.map(({ path, icon: Icon, label }) => {
@@ -208,74 +217,80 @@ export default function Layout() {
                   to={path}
                   className="sidebar-nav-link"
                   style={S.navLink(active)}
+                  title={collapsed ? label : undefined}
                 >
-                  {active && <div style={S.activeBar} />}
-                  <Icon
-                    size={17}
-                    color={active ? '#f97316' : undefined}
-                    style={{ flexShrink: 0, marginLeft: active ? 2 : 0 }}
-                  />
+                  <Icon size={18} strokeWidth={1.8} color={active ? C.gold : undefined} style={{ flexShrink: 0 }} />
                   {!collapsed && <span>{label}</span>}
+                  {!collapsed && active && <span style={S.activeDot} />}
                 </NavLink>
               );
             })}
           </nav>
 
           {/* Footer */}
-          <div style={{ padding: '8px', ...S.footer }}>
+          <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 2 }}>
             {/* User info */}
-            {!collapsed && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              padding: collapsed ? '14px 0' : '14px 10px',
+              borderTop: `1px solid ${C.line}`,
+              marginBottom: 6,
+            }}>
               <div style={{
-                padding: '8px 12px 10px',
-                marginBottom: 4,
-                borderBottom: '1px solid #1e2d45',
+                width: 34, height: 34, borderRadius: '50%',
+                background: 'linear-gradient(135deg,#2A2A2E,#18181B)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: C.gold, fontSize: 13, fontWeight: 600, flexShrink: 0,
               }}>
-                <div style={{ fontSize: 11, color: '#5a7080', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Signed in as</div>
-                <div style={{ fontSize: 13, color: '#f1f5f9', fontWeight: 600 }}>{username}</div>
+                {initials(username)}
               </div>
-            )}
+              {!collapsed && (
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 14, color: C.text, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</div>
+                  <div style={{ fontSize: 12.5, color: C.faint }}>Signed in</div>
+                </div>
+              )}
+            </div>
 
             {/* Theme toggle */}
             <button
               className="sidebar-footer-btn"
-              style={{
-                ...S.footerBtn,
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                marginBottom: 2,
-              }}
+              style={{ ...S.footerBtn, justifyContent: collapsed ? 'center' : 'flex-start' }}
               onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {theme === 'dark'
-                ? <Sun size={15} color="#facc15" />
-                : <Moon size={15} color="#60a5fa" />
+                ? <Sun size={17} strokeWidth={1.8} />
+                : <Moon size={17} strokeWidth={1.8} />
               }
               {!collapsed && (
-                <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
               )}
             </button>
 
             {/* Logout */}
             <button
               className="sidebar-footer-btn"
-              style={{ ...S.footerBtn, justifyContent: collapsed ? 'center' : 'flex-start', marginBottom: 2, color: '#f87171' }}
+              style={{ ...S.footerBtn, justifyContent: collapsed ? 'center' : 'flex-start' }}
               onClick={handleLogout}
+              aria-label="Sign out"
             >
-              <LogOut size={15} color="#f87171" />
-              {!collapsed && <span>Sign Out</span>}
+              <LogOut size={17} strokeWidth={1.8} />
+              {!collapsed && <span>Sign out</span>}
             </button>
 
             {/* Collapse */}
             <button
               className="sidebar-footer-btn"
-              style={{
-                ...S.footerBtn,
-                justifyContent: collapsed ? 'center' : 'flex-end',
-              }}
+              style={{ ...S.footerBtn, justifyContent: collapsed ? 'center' : 'flex-start' }}
               onClick={() => setCollapsed(c => !c)}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               {collapsed
-                ? <ChevronRight size={15} />
-                : <><span style={{ marginRight: 2 }}>Collapse</span><ChevronLeft size={15} /></>
+                ? <ChevronRight size={17} strokeWidth={1.8} />
+                : <><ChevronLeft size={17} strokeWidth={1.8} /><span>Collapse</span></>
               }
             </button>
           </div>
@@ -287,46 +302,42 @@ export default function Layout() {
           style={{
             display: 'none',
             position: 'fixed', top: 0, left: 0, right: 0, zIndex: 300,
-            background: '#0f1520',
-            borderBottom: '1px solid #1e2d45',
-            padding: '0 16px', height: 56,
+            background: 'rgba(10,10,11,0.86)',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            borderBottom: `1px solid ${C.line}`,
+            padding: '0 16px', height: 60,
             alignItems: 'center', justifyContent: 'space-between',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 7,
-              background: '#f97316',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <Zap size={14} color="white" fill="white" />
-            </div>
-            <span style={{ fontWeight: 700, fontSize: 15, color: '#f1f5f9' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <LogoMark size={32} />
+            <span style={{ fontFamily: SERIF, fontSize: 25, lineHeight: 1, color: C.text }}>
               TruckFlow
             </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <button
               onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               style={{
                 background: 'transparent', border: 'none', cursor: 'pointer',
-                padding: 8, borderRadius: 8, display: 'flex', alignItems: 'center',
+                width: 44, height: 44, borderRadius: 999, display: 'flex',
+                alignItems: 'center', justifyContent: 'center', color: C.dim,
               }}
             >
-              {theme === 'dark'
-                ? <Sun size={18} color="#facc15" />
-                : <Moon size={18} color="#60a5fa" />
-              }
+              {theme === 'dark' ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
             </button>
             <button
               onClick={() => setMobileMenuOpen(o => !o)}
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
               style={{
                 background: 'transparent', border: 'none', cursor: 'pointer',
-                padding: 8, borderRadius: 8, display: 'flex', alignItems: 'center',
-                color: '#f1f5f9',
+                width: 44, height: 44, borderRadius: 999, display: 'flex',
+                alignItems: 'center', justifyContent: 'center', color: C.text,
               }}
             >
-              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              {mobileMenuOpen ? <X size={22} strokeWidth={1.5} /> : <Menu size={22} strokeWidth={1.5} />}
             </button>
           </div>
         </div>
@@ -338,16 +349,16 @@ export default function Layout() {
               onClick={closeMenu}
               style={{
                 position: 'fixed', inset: 0, zIndex: 280,
-                background: 'rgba(0,0,0,0.6)',
-                backdropFilter: 'blur(4px)',
+                background: 'rgba(5,5,6,0.66)',
+                backdropFilter: 'blur(6px)',
               }}
             />
             <div style={{
-              position: 'fixed', top: 56, left: 0, right: 0, zIndex: 290,
-              background: '#0f1520',
-              borderBottom: '1px solid #1e2d45',
-              padding: '8px 10px 14px',
-              animation: 'slideDown 0.18s ease',
+              position: 'fixed', top: 60, left: 0, right: 0, zIndex: 290,
+              background: C.bg,
+              borderBottom: `1px solid ${C.line}`,
+              padding: '10px 12px 16px',
+              animation: 'slideDown 0.2s ease',
             }}>
               {navItems.map(({ path, icon: Icon, label }) => {
                 const active = location.pathname.startsWith(path);
@@ -358,18 +369,19 @@ export default function Layout() {
                     onClick={closeMenu}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 14,
-                      padding: '12px 14px',
-                      borderRadius: 9,
-                      color: active ? '#f97316' : '#b0bec8',
-                      background: active ? 'rgba(249,115,22,0.12)' : 'transparent',
-                      fontWeight: active ? 600 : 400,
-                      fontSize: 15,
+                      padding: '13px 14px',
+                      borderRadius: 12,
+                      color: active ? C.text : C.dim,
+                      background: active ? 'rgba(255,255,255,0.06)' : 'transparent',
+                      fontWeight: active ? 600 : 500,
+                      fontSize: 16,
                       marginBottom: 2,
                       textDecoration: 'none',
                     }}
                   >
-                    <Icon size={18} />
+                    <Icon size={19} strokeWidth={1.8} color={active ? C.gold : undefined} />
                     <span>{label}</span>
+                    {active && <span style={S.activeDot} />}
                   </NavLink>
                 );
               })}
@@ -395,9 +407,11 @@ export default function Layout() {
           style={{
             display: 'none',
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 300,
-            background: '#0f1520',
-            borderTop: '1px solid #1e2d45',
-            padding: `6px 0 calc(6px + env(safe-area-inset-bottom))`,
+            background: 'rgba(10,10,11,0.9)',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            borderTop: `1px solid ${C.line}`,
+            padding: `8px 0 calc(8px + env(safe-area-inset-bottom))`,
             justifyContent: 'space-around',
             alignItems: 'center',
           }}
@@ -409,17 +423,18 @@ export default function Layout() {
                 key={path}
                 to={path}
                 style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
                   padding: '4px 12px',
-                  color: active ? '#f97316' : '#5a7080',
-                  fontSize: 10.5,
-                  fontWeight: active ? 600 : 400,
-                  minWidth: 52,
+                  color: active ? C.gold : C.faint,
+                  fontSize: 11.5,
+                  fontWeight: active ? 600 : 500,
+                  letterSpacing: '0.02em',
+                  minWidth: 56,
                   textDecoration: 'none',
-                  transition: 'color 0.15s ease',
+                  transition: 'color 0.2s ease',
                 }}
               >
-                <Icon size={21} />
+                <Icon size={21} strokeWidth={1.8} />
                 <span>{label}</span>
               </NavLink>
             );

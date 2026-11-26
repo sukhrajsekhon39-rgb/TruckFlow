@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { analyticsApi } from '../utils/api';
-import { Package, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, parse, startOfDay, startOfWeek, startOfMonth, addDays, addWeeks, addMonths } from 'date-fns';
 
 function StatusBadge({ status }) {
@@ -101,12 +101,12 @@ function WorkSummary({ isMobile }) {
   ];
 
   return (
-    <div style={{ marginBottom: 28 }}>
+    <div style={{ marginBottom: 36 }}>
       {/* Title + period controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 20 }}>
         <div>
-          <div style={{ fontSize: 17, fontWeight: 700 }}>{title}</div>
-          <div style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 2 }}>{subtitle}</div>
+          <div className="serif" style={{ fontSize: isMobile ? 28 : 34, lineHeight: 1 }}>{title}</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 8 }}>{subtitle}</div>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
           {[['week', 'Week'], ['month', 'Month'], ['custom', 'Custom']].map(([m, label]) => (
@@ -140,21 +140,21 @@ function WorkSummary({ isMobile }) {
       ) : (
         <>
           {/* Totals for the selection */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(6, 1fr)', gap: isMobile ? 10 : 14, marginBottom: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(6, 1fr)', gap: isMobile ? 10 : 14, marginBottom: 16 }}>
             {kpis.map(k => (
               <div key={k.label} className={`stat-card ${k.color}`}>
                 <div className="stat-label">{k.label}</div>
-                <div className="stat-value" style={{ fontSize: isMobile ? 18 : 22 }}>{k.value}</div>
+                <div className="stat-value" style={{ fontSize: isMobile ? 26 : 34 }}>{k.value}</div>
               </div>
             ))}
           </div>
 
           {/* Loads for the selection */}
           <div className="card" style={{ padding: 0, minWidth: 0 }}>
-            <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="section-title" style={{ fontSize: 15 }}>
-                <Package size={15} color="var(--accent)" /> Loads
-                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 13, marginLeft: 6 }}>{sorted.length}</span>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em', alignItems: 'baseline', gap: 10 }}>
+                Loads
+                <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', fontSize: 13 }}>{sorted.length}</span>
               </div>
               <Link to="/loads" className="btn btn-ghost btn-sm">View all →</Link>
             </div>
@@ -174,10 +174,10 @@ function WorkSummary({ isMobile }) {
                         <span className="mono" style={{ color: 'var(--accent)', fontSize: 13, fontWeight: 600 }}>{load.loadNumber}</span>
                         <StatusBadge status={load.status} />
                       </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {load.pickup?.city || '—'}{load.delivery?.city ? ` → ${load.delivery.city}` : ''}
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                      <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 2 }}>
                         {format(dateOf(load), 'EEE MMM d')}{load.miles ? ` · ${load.miles.toLocaleString()} mi` : ''}{load.driver?.name ? ` · ${load.driver.name}` : ''}{load.broker?.name ? ` · ${load.broker.name}` : ''}
                       </div>
                     </div>
@@ -212,7 +212,7 @@ function WorkSummary({ isMobile }) {
                         <td><span className="mono" style={{ color: 'var(--accent)' }}>{load.loadNumber}</span></td>
                         <td>{load.driver?.name || '—'}</td>
                         <td>{load.broker?.name || '—'}</td>
-                        <td style={{ fontSize: 12 }}>
+                        <td style={{ fontSize: 13 }}>
                           {load.pickup?.city || '—'}
                           {load.delivery?.city ? <span style={{ color: 'var(--text-muted)' }}> → {load.delivery.city}</span> : ''}
                         </td>
@@ -255,24 +255,24 @@ export default function Dashboard() {
   return (
     <div className="page-enter">
       {/* Header */}
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>{greeting} 👋</h1>
-        <p style={{ color: 'var(--text-secondary)', marginTop: 4, fontSize: 14 }}>
-          {format(now, 'EEEE, MMMM d, yyyy')}
-        </p>
+      <div style={{ marginBottom: 32, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="eyebrow">{format(now, 'EEEE, MMMM d, yyyy')}</div>
+        <h1 className="serif" style={{ fontSize: isMobile ? 42 : 56, lineHeight: 1 }}>
+          {greeting}<span style={{ fontStyle: 'italic', color: 'var(--accent)' }}>.</span>
+        </h1>
       </div>
 
       {/* Alert */}
       {pendingInvoice > 0 && (
         <div style={{
-          background: 'var(--yellow-dim)', border: '1px solid rgba(245,158,11,0.3)',
-          borderRadius: 'var(--radius-sm)', padding: '12px 16px',
-          marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10,
-          fontSize: 14, color: 'var(--yellow)', flexWrap: 'wrap',
+          background: 'var(--accent-dim)', border: '1px solid var(--accent-border)',
+          borderRadius: 'var(--radius)', padding: '16px 22px',
+          marginBottom: 32, display: 'flex', alignItems: 'center', gap: 14,
+          fontSize: 13.5, color: 'var(--text-primary)', flexWrap: 'wrap',
         }}>
-          <AlertCircle size={16} style={{ flexShrink: 0 }} />
-          <span><strong>{pendingInvoice} load{pendingInvoice > 1 ? 's' : ''}</strong> awaiting invoice</span>
-          <Link to="/loads?status=Delivered" style={{ marginLeft: 'auto', textDecoration: 'underline', color: 'inherit', whiteSpace: 'nowrap' }}>View →</Link>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
+          <span><strong style={{ fontWeight: 600 }}>{pendingInvoice} load{pendingInvoice > 1 ? 's' : ''}</strong> delivered and awaiting invoice</span>
+          <Link to="/loads?status=Delivered" style={{ marginLeft: 'auto', color: 'var(--accent)', fontWeight: 500, whiteSpace: 'nowrap' }}>Review now →</Link>
         </div>
       )}
 
@@ -280,15 +280,15 @@ export default function Dashboard() {
       <WorkSummary isMobile={isMobile} />
 
       {/* Status + top drivers (all time) */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
         <div className="card">
-          <div style={{ fontWeight: 600, marginBottom: 14, fontSize: 14 }}>Load Status</div>
+          <div style={{ marginBottom: 18, fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.2 }}>Load Status</div>
           {(analytics?.statusBreakdown || []).map(s => (
             <div key={s._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <StatusBadge status={s._id} />
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <span style={{ fontWeight: 600, fontSize: 14 }}>{s.count}</span>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>${(s.revenue || 0).toLocaleString()}</span>
+                <span style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>${(s.revenue || 0).toLocaleString()}</span>
               </div>
             </div>
           ))}
@@ -296,12 +296,12 @@ export default function Dashboard() {
         </div>
 
         <div className="card">
-          <div style={{ fontWeight: 600, marginBottom: 14, fontSize: 14 }}>Top Drivers</div>
+          <div style={{ marginBottom: 18, fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.2 }}>Top Drivers</div>
           {(analytics?.topDrivers || []).slice(0, 4).map(d => (
             <div key={d._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.name}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.loads} loads · {(d.miles || 0).toLocaleString()} mi</div>
+                <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{d.loads} loads · {(d.miles || 0).toLocaleString()} mi</div>
               </div>
               <span style={{ color: 'var(--green)', fontWeight: 600, fontSize: 13, flexShrink: 0, marginLeft: 8 }}>${(d.revenue || 0).toLocaleString()}</span>
             </div>

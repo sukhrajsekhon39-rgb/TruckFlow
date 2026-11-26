@@ -158,7 +158,7 @@ function StatusBadge({ status }) {
 function Field({ label, children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
+      <span style={{ fontSize: 12.5, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
       {children}
     </div>
   );
@@ -247,7 +247,7 @@ function Section({ title, note, children }) {
     <div className="card" style={{ padding: 0, minWidth: 0 }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ fontWeight: 600, fontSize: 15 }}>{title}</div>
-        {note && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{note}</div>}
+        {note && <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>{note}</div>}
       </div>
       {children}
     </div>
@@ -440,7 +440,7 @@ export default function Analytics() {
             {kpis.map(k => (
               <div key={k.label} className={`stat-card ${k.color}`} title={k.hint}>
                 <div className="stat-label">{k.label}</div>
-                <div className="stat-value" style={{ fontSize: 22 }}>{k.fmt(cur[k.key])}</div>
+                <div className="stat-value" style={{ fontSize: 32 }}>{k.fmt(cur[k.key])}</div>
                 <Delta cur={cur[k.key]} prev={prevSum ? prevSum[k.key] : null} fmt={k.fmt} label={period.prevLabel} complete={period.complete} invert={k.invert} />
               </div>
             ))}
@@ -453,14 +453,14 @@ export default function Analytics() {
           ) : (
             <>
               <div className="card" style={{ marginBottom: 20 }}>
-                <div style={{ fontWeight: 600, marginBottom: 16, fontSize: 15 }}>Revenue over time</div>
+                <div style={{ marginBottom: 18, fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.2 }}>Revenue over time</div>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={series}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="label" stroke="var(--text-muted)" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
-                    <YAxis stroke="var(--text-muted)" tick={{ fontSize: 11 }} tickFormatter={v => (v >= 1000 ? `$${(v / 1000).toFixed(v % 1000 ? 1 : 0)}k` : `$${v}`)} width={52} />
-                    <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
-                    <Bar dataKey="revenue" fill="var(--accent)" radius={[4, 4, 0, 0]} />
+                    <CartesianGrid vertical={false} stroke="var(--border)" />
+                    <XAxis dataKey="label" stroke="var(--text-muted)" tick={{ fontSize: 12.5 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                    <YAxis stroke="var(--text-muted)" tick={{ fontSize: 12.5 }} tickLine={false} axisLine={false} tickFormatter={v => (v >= 1000 ? `$${(v / 1000).toFixed(v % 1000 ? 1 : 0)}k` : `$${v}`)} width={52} />
+                    <Tooltip content={<ChartTip />} cursor={{ fill: 'var(--accent-dim)' }} />
+                    <Bar dataKey="revenue" fill="var(--accent)" radius={[6, 6, 0, 0]} maxBarSize={44} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -530,7 +530,7 @@ export default function Analytics() {
               <>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', padding: '14px 16px', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
                   <div style={{ marginRight: 8 }}>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Total owed</div>
+                    <div style={{ fontSize: 12.5, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Total owed</div>
                     <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--yellow)' }}>{money(owedTotal)}</div>
                   </div>
                   {AGE_BUCKETS.map(([label, lo, hi]) => {
@@ -538,9 +538,9 @@ export default function Analytics() {
                     const amt = inB.reduce((s, r) => s + r.amount, 0);
                     return (
                       <div key={label} style={{ padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 8, minWidth: 110, opacity: inB.length ? 1 : 0.5 }}>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</div>
+                        <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{label}</div>
                         <div style={{ fontWeight: 700, fontSize: 15, color: lo >= 46 && inB.length ? 'var(--red)' : undefined }}>{money(amt)}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{inB.length} load{inB.length === 1 ? '' : 's'}</div>
+                        <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{inB.length} load{inB.length === 1 ? '' : 's'}</div>
                       </div>
                     );
                   })}

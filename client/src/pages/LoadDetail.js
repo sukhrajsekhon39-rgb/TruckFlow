@@ -198,7 +198,7 @@ function GmailModal({ loadId, onImported, onClose }) {
             <div key={email.uid} className="card" style={{ padding: '12px 14px' }}>
               <div style={{ marginBottom: 10 }}>
                 <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>{email.subject}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                   {email.from} · {email.date ? new Date(email.date).toLocaleDateString() : ''}
                 </div>
               </div>
@@ -214,11 +214,11 @@ function GmailModal({ loadId, onImported, onClose }) {
                     <Paperclip size={14} color="var(--text-muted)" />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{att.filename}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{formatSize(att.size)}</div>
+                      <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{formatSize(att.size)}</div>
                     </div>
                     <select
                       className="form-control"
-                      style={{ width: 130, fontSize: 12, padding: '4px 8px' }}
+                      style={{ width: 130, fontSize: 13, padding: '4px 8px' }}
                       value={selectedType[key] || 'Other'}
                       onChange={e => setSelectedType(prev => ({ ...prev, [key]: e.target.value }))}
                     >
@@ -337,15 +337,15 @@ export default function LoadDetail() {
         <button className="btn btn-ghost btn-icon" onClick={() => navigate('/loads')}><ArrowLeft size={18} /></button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700 }} className="mono">Load {load.loadNumber}</h1>
+            <h1 className="serif" style={{ fontSize: isMobile ? 32 : 44, lineHeight: 1 }}>Load <span style={{ color: 'var(--accent)' }}>{load.loadNumber}</span></h1>
             <StatusBadge status={load.status} />
             {load.invoiceGenerated && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--green)' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--green)' }}>
                 <CheckCircle size={12} /> Invoiced
               </span>
             )}
           </div>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
             Created {format(new Date(load.createdAt), 'MMM d, yyyy h:mm a')}
           </p>
         </div>
@@ -386,7 +386,7 @@ export default function LoadDetail() {
               load.invoiceDate ? { label: 'Invoiced', value: format(new Date(load.invoiceDate), 'MM/dd/yyyy'), color: 'var(--text-primary)', size: 14 } : null,
             ].filter(Boolean).map(s => (
               <div key={s.label} style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: '12px 14px' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{s.label}</div>
+                <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginBottom: 4 }}>{s.label}</div>
                 <div style={{ fontSize: s.size, fontWeight: 700, color: s.color }}>{s.value}</div>
               </div>
             ))}
@@ -400,15 +400,15 @@ export default function LoadDetail() {
             <div style={{ position: 'relative', paddingLeft: 24 }}>
               <div style={{ position: 'absolute', left: 0, top: 4, width: 10, height: 10, background: 'var(--green)', borderRadius: '50%' }} />
               <div style={{ position: 'absolute', left: 4, top: 14, bottom: -12, width: 2, background: 'var(--border)' }} />
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>PICKUP</div>
+              <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginBottom: 2 }}>PICKUP</div>
               <div style={{ fontWeight: 500, fontSize: 14 }}>{pickupFull || '—'}</div>
-              {load.pickup?.scheduledTime && <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{format(new Date(load.pickup.scheduledTime), 'EEE, MMM d · h:mm a')}</div>}
+              {load.pickup?.scheduledTime && <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>{format(new Date(load.pickup.scheduledTime), 'EEE, MMM d · h:mm a')}</div>}
             </div>
             <div style={{ position: 'relative', paddingLeft: 24 }}>
               <div style={{ position: 'absolute', left: 0, top: 4, width: 10, height: 10, background: 'var(--accent)', borderRadius: '50%' }} />
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>DELIVERY</div>
+              <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginBottom: 2 }}>DELIVERY</div>
               <div style={{ fontWeight: 500, fontSize: 14 }}>{deliveryFull || '—'}</div>
-              {load.delivery?.scheduledTime && <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{format(new Date(load.delivery.scheduledTime), 'EEE, MMM d · h:mm a')}</div>}
+              {load.delivery?.scheduledTime && <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>{format(new Date(load.delivery.scheduledTime), 'EEE, MMM d · h:mm a')}</div>}
             </div>
           </div>
         </div>
@@ -439,8 +439,8 @@ export default function LoadDetail() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.name}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                  <span style={{ fontSize: 11, color: DOC_COLORS[doc.type] || 'var(--text-muted)', fontWeight: 500 }}>{doc.type}</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>· {format(new Date(doc.uploadedAt), 'MM/dd/yyyy')}</span>
+                  <span style={{ fontSize: 12.5, color: DOC_COLORS[doc.type] || 'var(--text-muted)', fontWeight: 500 }}>{doc.type}</span>
+                  <span style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>· {format(new Date(doc.uploadedAt), 'MM/dd/yyyy')}</span>
                 </div>
               </div>
               <button className="btn btn-ghost btn-icon btn-sm" title="Preview"

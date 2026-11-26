@@ -174,7 +174,7 @@ export default function GmailInbox() {
                     <div style={{ fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {email.subject}
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                       <span>{email.from}</span>
                       {email.date && <span>{format(new Date(email.date), 'MMM d, yyyy')}</span>}
                       <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -196,9 +196,9 @@ export default function GmailInbox() {
                       const isImporting = importing === key;
                       return (
                         <div key={attIdx} style={{
-                          background: isImported ? 'rgba(34,197,94,0.06)' : 'var(--bg-secondary)',
-                          borderRadius: 8, padding: '12px 14px',
-                          border: isImported ? '1px solid rgba(34,197,94,0.3)' : '1px solid transparent',
+                          background: isImported ? 'var(--green-dim)' : 'var(--bg-secondary)',
+                          borderRadius: 12, padding: '14px 16px',
+                          border: isImported ? '1px solid var(--green-border)' : '1px solid var(--border)',
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: isImported ? 0 : 12 }}>
                             <FileText size={14} color="var(--accent)" />
@@ -206,9 +206,9 @@ export default function GmailInbox() {
                               <div style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {att.filename}
                               </div>
-                              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{formatSize(att.size)}</div>
+                              <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{formatSize(att.size)}</div>
                             </div>
-                            {isImported && <span style={{ fontSize: 12, color: 'var(--green)', fontWeight: 600 }}>✓ Imported</span>}
+                            {isImported && <span style={{ fontSize: 13, color: 'var(--green)', fontWeight: 600 }}>✓ Imported</span>}
                             {!isImported && (
                               <button className="btn btn-ghost btn-icon btn-sm" title="Preview"
                                 onClick={() => previewAttachment(email, attIdx)}>
@@ -219,7 +219,7 @@ export default function GmailInbox() {
 
                           {!isImported && (
                             <div style={{ display: 'flex', gap: 8, flexWrap: isMobile ? 'wrap' : 'nowrap', alignItems: 'center' }}>
-                              <select className="form-control" style={{ flex: 2, fontSize: 12 }}
+                              <select className="form-control" style={{ flex: 2, fontSize: 13 }}
                                 value={selectedLoad[key] || ''}
                                 onChange={e => setSelectedLoad(prev => ({ ...prev, [key]: e.target.value }))}>
                                 <option value="">Select load to import into...</option>
@@ -229,7 +229,7 @@ export default function GmailInbox() {
                                   </option>
                                 ))}
                               </select>
-                              <select className="form-control" style={{ flex: 1, fontSize: 12 }}
+                              <select className="form-control" style={{ flex: 1, fontSize: 13 }}
                                 value={selectedType[key] || 'BOL'}
                                 onChange={e => setSelectedType(prev => ({ ...prev, [key]: e.target.value }))}>
                                 {DOC_TYPES.map(t => <option key={t}>{t}</option>)}

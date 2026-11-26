@@ -82,7 +82,7 @@ export default function EntityPage({ title, api, fields, columns, emptyIcon }) {
                     {columns[0].render ? columns[0].render(item[columns[0].key], item) : (item[columns[0].key] || '—')}
                   </div>
                   {columns.slice(1, 3).map(col => (
-                    <div key={col.key} style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
+                    <div key={col.key} style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 2 }}>
                       <span style={{ color: 'var(--text-muted)' }}>{col.label}: </span>
                       {col.render ? col.render(item[col.key], item) : (item[col.key] || '—')}
                     </div>
