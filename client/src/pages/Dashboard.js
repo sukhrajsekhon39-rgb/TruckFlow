@@ -108,16 +108,18 @@ function WorkSummary({ isMobile }) {
           <div className="serif" style={{ fontSize: isMobile ? 28 : 34, lineHeight: 1 }}>{title}</div>
           <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 8 }}>{subtitle}</div>
         </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-          {[['week', 'Week'], ['month', 'Month'], ['custom', 'Custom']].map(([m, label]) => (
-            <button key={m} className={`btn btn-sm ${mode === m ? 'btn-primary' : 'btn-secondary'}`} onClick={() => { setMode(m); setAnchor(new Date()); }}>{label}</button>
-          ))}
+        <div className="period-controls" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="period-group" style={{ display: 'flex', gap: 6 }}>
+            {[['week', 'Week'], ['month', 'Month'], ['custom', 'Custom']].map(([m, label]) => (
+              <button key={m} className={`btn btn-sm ${mode === m ? 'btn-primary' : 'btn-secondary'}`} onClick={() => { setMode(m); setAnchor(new Date()); }}>{label}</button>
+            ))}
+          </div>
           {mode !== 'custom' && (
-            <>
-              <button className="btn btn-secondary btn-sm" aria-label="Previous" onClick={() => step(-1)}><ChevronLeft size={15} /></button>
+            <div className="period-group" style={{ display: 'flex', gap: 6 }}>
+              <button className="btn btn-secondary btn-sm btn-icon" aria-label="Previous" onClick={() => step(-1)}><ChevronLeft size={16} /></button>
               <button className="btn btn-secondary btn-sm" onClick={() => setAnchor(new Date())} disabled={isCurrent}>{mode === 'week' ? 'This week' : 'This month'}</button>
-              <button className="btn btn-secondary btn-sm" aria-label="Next" onClick={() => step(1)}><ChevronRight size={15} /></button>
-            </>
+              <button className="btn btn-secondary btn-sm btn-icon" aria-label="Next" onClick={() => step(1)}><ChevronRight size={16} /></button>
+            </div>
           )}
         </div>
       </div>

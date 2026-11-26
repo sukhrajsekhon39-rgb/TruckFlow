@@ -152,7 +152,7 @@ export default function Layout() {
           .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
           .modal { max-width: 100% !important; width: 100% !important; border-radius: 22px 22px 0 0 !important; max-height: 92vh !important; }
           .modal-lg { max-width: 100% !important; }
-          table { min-width: 560px; }
+          table { min-width: 100%; width: max-content; }
         }
         @media (max-width: 390px) {
           .stats-grid { grid-template-columns: 1fr !important; }

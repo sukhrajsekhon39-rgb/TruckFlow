@@ -428,7 +428,7 @@ export default function Loads() {
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
         <div className="search-bar" style={{ flex: 1, minWidth: isMobile ? '100%' : 200 }}>
           <Search size={15} />
-          <input className="form-control" placeholder="Search by load #, driver, broker, city, status, rate..." value={search} onChange={e => setSearch(e.target.value)} />
+          <input className="form-control" placeholder="Search loads, drivers, cities…" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Filter size={14} color="var(--text-muted)" />
