@@ -351,7 +351,6 @@ tbody td:first-child {
   -webkit-backdrop-filter: blur(10px);
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
-  animation: fadeIn 0.2s ease;
 }
 .modal {
   background: var(--bg-card);
@@ -360,7 +359,6 @@ tbody td:first-child {
   width: 100%; max-width: 680px;
   max-height: 90vh; overflow-y: auto;
   box-shadow: var(--shadow-lg);
-  animation: slideUp 0.28s cubic-bezier(0.22,1,0.36,1);
 }
 .modal-lg { max-width: 900px; }
 
@@ -499,6 +497,7 @@ tbody td:first-child {
   font-family: var(--font-mono);
   font-size: 13.5px;
   font-weight: 500;
+  white-space: nowrap;
   letter-spacing: 0;
 }
 
@@ -544,19 +543,127 @@ tbody td:first-child {
 /* ══════════════════════════════════════════════
    ANIMATIONS
 ══════════════════════════════════════════════ */
-.page-enter { animation: fadeSlideIn 0.35s cubic-bezier(0.22,1,0.36,1); }
+/* Motion tokens */
+:root {
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
 
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* All entrance animations use fill-mode "backwards": once finished they leave
+   no transform behind, so position:fixed modals inside pages still work. */
+
+/* Route change — whole content area fades up */
+.main-content.page-enter { animation: pageIn 0.5s var(--ease-out) backwards; }
+
+/* Page sections reveal one after another */
+.main-content > .page-enter > * { animation: riseIn 0.7s var(--ease-out) backwards; }
+.main-content > .page-enter > *:nth-child(1) { animation-delay: 0.04s; }
+.main-content > .page-enter > *:nth-child(2) { animation-delay: 0.10s; }
+.main-content > .page-enter > *:nth-child(3) { animation-delay: 0.16s; }
+.main-content > .page-enter > *:nth-child(4) { animation-delay: 0.22s; }
+.main-content > .page-enter > *:nth-child(5) { animation-delay: 0.28s; }
+.main-content > .page-enter > *:nth-child(n+6) { animation-delay: 0.34s; }
+
+/* Grids of cards cascade in */
+.stagger > * { animation: riseIn 0.65s var(--ease-out) backwards; }
+.stagger > *:nth-child(1) { animation-delay: 0.08s; }
+.stagger > *:nth-child(2) { animation-delay: 0.14s; }
+.stagger > *:nth-child(3) { animation-delay: 0.20s; }
+.stagger > *:nth-child(4) { animation-delay: 0.26s; }
+.stagger > *:nth-child(5) { animation-delay: 0.32s; }
+.stagger > *:nth-child(6) { animation-delay: 0.38s; }
+.stagger > *:nth-child(n+7) { animation-delay: 0.44s; }
+
+/* Table rows fade in row by row */
+tbody tr { animation: rowIn 0.5s var(--ease-out) backwards; }
+tbody tr:nth-child(1)  { animation-delay: 0.12s; }
+tbody tr:nth-child(2)  { animation-delay: 0.16s; }
+tbody tr:nth-child(3)  { animation-delay: 0.20s; }
+tbody tr:nth-child(4)  { animation-delay: 0.24s; }
+tbody tr:nth-child(5)  { animation-delay: 0.28s; }
+tbody tr:nth-child(6)  { animation-delay: 0.32s; }
+tbody tr:nth-child(7)  { animation-delay: 0.36s; }
+tbody tr:nth-child(8)  { animation-delay: 0.40s; }
+tbody tr:nth-child(n+9){ animation-delay: 0.44s; }
+
+/* Stat cards — lift, soft gold glow from the top */
+.stat-card { transition: transform 0.4s var(--ease-out), border-color 0.3s ease, box-shadow 0.4s var(--ease-out); }
+.stat-card::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(120% 80% at 50% -20%, var(--accent-dim), transparent 60%);
+  opacity: 0; transition: opacity 0.4s ease;
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.stat-card:hover::after { opacity: 1; }
+
+/* Primary buttons — light sweep on hover */
+.btn-primary { position: relative; overflow: hidden; isolation: isolate; }
+.btn-primary::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 50%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg); pointer-events: none; z-index: -1; opacity: 0;
 }
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px) scale(0.985); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+.btn-primary:hover:not(:disabled)::after { animation: shine 0.9s var(--ease-out); }
+.btn { transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.35s var(--ease-out), transform 0.2s var(--ease-out), filter 0.25s ease; }
+.btn:active:not(:disabled) { transform: scale(0.96); }
+.btn-secondary:hover:not(:disabled), .btn-ghost:hover:not(:disabled) { transform: translateY(-1px); }
+
+/* Cards and inputs ease their borders */
+.card { transition: border-color 0.3s ease, box-shadow 0.4s var(--ease-out), background-color 0.3s ease; }
+.form-control { transition: border-color 0.25s ease, box-shadow 0.35s var(--ease-out), background-color 0.25s ease; }
+
+/* Badges pop in */
+.badge { animation: badgeIn 0.45s var(--ease-spring) backwards; animation-delay: 0.2s; }
+
+/* Gold pulse for live dots (alerts) */
+.pulse-dot { position: relative; }
+.pulse-dot::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: inherit; animation: pulse 2.4s var(--ease-out) infinite;
+}
+
+/* Modals — overlay fades, panel scales up; phones get a bottom-sheet slide */
+.modal-overlay { animation: fadeIn 0.25s ease; }
+.modal { animation: modalIn 0.42s var(--ease-out); }
+@media (max-width: 768px) {
+  .modal { animation: sheetUp 0.45s var(--ease-out); }
+}
+
+/* Smooth colour cross-fade when switching light/dark */
+html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+  transition: background-color 0.45s ease, border-color 0.45s ease, color 0.45s ease, fill 0.45s ease !important;
+}
+
+@keyframes pageIn   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes riseIn   { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes rowIn    { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes badgeIn  { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: none; } }
+@keyframes modalIn  { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes sheetUp  { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes shine    { 0% { left: -60%; opacity: 1; } 100% { left: 130%; opacity: 1; } }
+@keyframes pulse    { 0% { transform: scale(1); opacity: 0.6; } 70%, 100% { transform: scale(3); opacity: 0; } }
+@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp  { from { opacity: 0; transform: translateY(16px) scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes shimmer  { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+
+/* Loading placeholder shimmer */
+.skeleton {
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--bg-card) 0%, var(--bg-card-hover) 40%, var(--bg-card) 80%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Respect "reduce motion" accessibility setting */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ══════════════════════════════════════════════

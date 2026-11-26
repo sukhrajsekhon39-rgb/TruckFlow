@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { analyticsApi } from '../utils/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import CountUp from '../components/CountUp';
 import { format, parse, startOfDay, startOfWeek, startOfMonth, addDays, addWeeks, addMonths } from 'date-fns';
 
 function StatusBadge({ status }) {
@@ -142,11 +143,11 @@ function WorkSummary({ isMobile }) {
       ) : (
         <>
           {/* Totals for the selection */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(6, 1fr)', gap: isMobile ? 10 : 14, marginBottom: 16 }}>
+          <div className="stagger" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(6, 1fr)', gap: isMobile ? 10 : 14, marginBottom: 16 }}>
             {kpis.map(k => (
               <div key={k.label} className={`stat-card ${k.color}`}>
                 <div className="stat-label">{k.label}</div>
-                <div className="stat-value" style={{ fontSize: isMobile ? 26 : 34 }}>{k.value}</div>
+                <div className="stat-value" style={{ fontSize: isMobile ? 26 : 34 }}><CountUp value={k.value} /></div>
               </div>
             ))}
           </div>
@@ -272,7 +273,7 @@ export default function Dashboard() {
           marginBottom: 32, display: 'flex', alignItems: 'center', gap: 14,
           fontSize: 13.5, color: 'var(--text-primary)', flexWrap: 'wrap',
         }}>
-          <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
+          <span className="pulse-dot" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
           <span><strong style={{ fontWeight: 600 }}>{pendingInvoice} load{pendingInvoice > 1 ? 's' : ''}</strong> delivered and awaiting invoice</span>
           <Link to="/loads?status=Delivered" style={{ marginLeft: 'auto', color: 'var(--accent)', fontWeight: 500, whiteSpace: 'nowrap' }}>Review now →</Link>
         </div>

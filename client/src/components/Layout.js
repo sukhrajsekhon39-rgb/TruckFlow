@@ -45,7 +45,7 @@ function initials(name) {
 
 function LogoMark({ size = 40 }) {
   return (
-    <div style={{
+    <div className="logo-mark" style={{
       width: size, height: size, borderRadius: size * 0.28,
       background: 'linear-gradient(145deg, #E6CC98 0%, #C9A86C 100%)',
       boxShadow: '0 6px 18px -6px rgba(216,188,134,0.55), inset 0 1px 0 rgba(255,255,255,0.35)',
@@ -68,7 +68,14 @@ export default function Layout() {
     localStorage.setItem('tf-theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+  // Cross-fade colours briefly while the theme switches
+  const toggleTheme = () => {
+    const root = document.documentElement;
+    root.classList.add('theme-anim');
+    setTheme(t => t === 'dark' ? 'light' : 'dark');
+    window.clearTimeout(window.__tfThemeTimer);
+    window.__tfThemeTimer = window.setTimeout(() => root.classList.remove('theme-anim'), 500);
+  };
   const closeMenu   = () => setMobileMenuOpen(false);
   const username    = localStorage.getItem('tf-user') || 'Admin';
 
@@ -118,10 +125,32 @@ export default function Layout() {
   return (
     <>
       <style>{`
+        .sidebar-nav-link {
+          transition: background-color .3s ease, color .3s ease !important;
+        }
         .sidebar-nav-link:hover {
           background: rgba(255,255,255,0.04) !important;
           color: ${C.text} !important;
         }
+        .sidebar-nav-link svg { transition: transform .35s cubic-bezier(0.34,1.4,0.64,1), color .3s ease; }
+        .sidebar-nav-link:hover svg { transform: translateX(2px) scale(1.08); }
+        .nav-dot { animation: dotPop .45s cubic-bezier(0.34,1.6,0.64,1) backwards; }
+        @keyframes dotPop { from { transform: scale(0); opacity: 0; } to { transform: none; opacity: 1; } }
+        .side-anim > * { animation: sideIn .6s cubic-bezier(0.22,1,0.36,1) backwards; }
+        .side-anim > *:nth-child(1) { animation-delay: .05s; } .side-anim > *:nth-child(2) { animation-delay: .09s; }
+        .side-anim > *:nth-child(3) { animation-delay: .13s; } .side-anim > *:nth-child(4) { animation-delay: .17s; }
+        .side-anim > *:nth-child(5) { animation-delay: .21s; } .side-anim > *:nth-child(6) { animation-delay: .25s; }
+        .side-anim > *:nth-child(7) { animation-delay: .29s; } .side-anim > *:nth-child(8) { animation-delay: .33s; }
+        .side-anim > *:nth-child(9) { animation-delay: .37s; }
+        @keyframes sideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+        .logo-mark { transition: transform .5s cubic-bezier(0.34,1.4,0.64,1), box-shadow .5s ease; }
+        .logo-link:hover .logo-mark { transform: rotate(-8deg) scale(1.06); box-shadow: 0 10px 26px -6px rgba(216,188,134,0.7), inset 0 1px 0 rgba(255,255,255,0.35) !important; }
+        .bottom-nav-link svg { transition: transform .4s cubic-bezier(0.34,1.6,0.64,1); }
+        .bottom-nav-link.active svg { transform: translateY(-2px) scale(1.08); }
+        .bottom-nav-link:active svg { transform: scale(0.88); }
+        .mobile-theme-btn svg { transition: transform .6s cubic-bezier(0.34,1.4,0.64,1); }
+        .mobile-theme-btn:active svg, .sidebar-footer-btn:active svg { transform: rotate(90deg) scale(0.9); }
+        .sidebar-footer-btn svg { transition: transform .5s cubic-bezier(0.34,1.4,0.64,1); }
         .sidebar-footer-btn:hover {
           background: rgba(255,255,255,0.04) !important;
           color: ${C.text} !important;
@@ -181,7 +210,7 @@ export default function Layout() {
           }}
         >
           {/* Logo */}
-          <div style={{
+          <div className="logo-link" style={{
             display: 'flex', alignItems: 'center', gap: 12,
             padding: collapsed ? '28px 0 0' : '28px 26px 0',
             justifyContent: collapsed ? 'center' : 'flex-start',
@@ -203,7 +232,7 @@ export default function Layout() {
           </div>
 
           {/* Nav */}
-          <nav style={{
+          <nav className="side-anim" style={{
             flex: 1,
             padding: '36px 16px 12px',
             display: 'flex', flexDirection: 'column', gap: 2,
@@ -221,7 +250,7 @@ export default function Layout() {
                 >
                   <Icon size={18} strokeWidth={1.8} color={active ? C.gold : undefined} style={{ flexShrink: 0 }} />
                   {!collapsed && <span>{label}</span>}
-                  {!collapsed && active && <span style={S.activeDot} />}
+                  {!collapsed && active && <span className="nav-dot" style={S.activeDot} />}
                 </NavLink>
               );
             })}
@@ -310,7 +339,7 @@ export default function Layout() {
             alignItems: 'center', justifyContent: 'space-between',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="logo-link" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <LogoMark size={32} />
             <span style={{ fontFamily: SERIF, fontSize: 25, lineHeight: 1, color: C.text }}>
               TruckFlow
@@ -318,6 +347,7 @@ export default function Layout() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <button
+              className="mobile-theme-btn"
               onClick={toggleTheme}
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               style={{
@@ -353,7 +383,7 @@ export default function Layout() {
                 backdropFilter: 'blur(6px)',
               }}
             />
-            <div style={{
+            <div className="side-anim" style={{
               position: 'fixed', top: 60, left: 0, right: 0, zIndex: 290,
               background: C.bg,
               borderBottom: `1px solid ${C.line}`,
@@ -381,7 +411,7 @@ export default function Layout() {
                   >
                     <Icon size={19} strokeWidth={1.8} color={active ? C.gold : undefined} />
                     <span>{label}</span>
-                    {active && <span style={S.activeDot} />}
+                    {active && <span className="nav-dot" style={S.activeDot} />}
                   </NavLink>
                 );
               })}
@@ -396,7 +426,7 @@ export default function Layout() {
           minWidth: 0, overflowX: 'hidden',
           background: 'var(--bg-primary)',
         }}>
-          <div className="main-content page-enter" style={{ flex: 1 }}>
+          <div key={location.pathname} className="main-content page-enter" style={{ flex: 1 }}>
             <Outlet />
           </div>
         </main>
@@ -422,6 +452,7 @@ export default function Layout() {
               <NavLink
                 key={path}
                 to={path}
+                className={`bottom-nav-link${active ? ' active' : ''}`}
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
                   padding: '4px 12px',

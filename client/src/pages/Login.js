@@ -93,6 +93,29 @@ export default function Login() {
           box-shadow: 0 12px 32px -10px rgba(205,176,122,0.55);
         }
         .login-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .login-in > * { animation: loginRise .9s cubic-bezier(0.22,1,0.36,1) backwards; }
+        .login-in > *:nth-child(1) { animation-delay: .05s; }
+        .login-in > *:nth-child(2) { animation-delay: .15s; }
+        .login-in > *:nth-child(3) { animation-delay: .25s; }
+        .login-in > *:nth-child(4) { animation-delay: .35s; }
+        .login-in > *:nth-child(5) { animation-delay: .45s; }
+        .login-in > *:nth-child(6) { animation-delay: .55s; }
+        .login-in > *:nth-child(7) { animation-delay: .65s; }
+        .login-headline span.line { display: block; animation: loginRise 1.1s cubic-bezier(0.22,1,0.36,1) backwards; }
+        .login-headline span.line:nth-child(2) { animation-delay: .5s; }
+        .login-route { animation: drawRoute 2.2s cubic-bezier(0.65,0,0.35,1) .3s backwards; }
+        .route-ping { transform-box: fill-box; transform-origin: center; animation: ping 2.6s cubic-bezier(0.22,1,0.36,1) 2.4s infinite backwards; }
+        .login-submit { position: relative; overflow: hidden; isolation: isolate; }
+        .login-submit::after { content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 50%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.4), transparent); transform: skewX(-20deg); z-index: -1; opacity: 0; }
+        .login-submit:hover:not(:disabled)::after { animation: loginShine .9s cubic-bezier(0.22,1,0.36,1); }
+        .login-submit:active:not(:disabled) { transform: scale(0.98); }
+        @keyframes loginRise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+        @keyframes drawRoute { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+        @keyframes ping { 0% { transform: scale(1); opacity: .7; } 70%, 100% { transform: scale(3.2); opacity: 0; } }
+        @keyframes loginShine { 0% { left: -60%; opacity: 1; } 100% { left: 130%; opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) {
+          .login-in > *, .login-headline span.line, .login-route, .route-ping { animation: none !important; }
+        }
         @media (max-width: 900px) {
           .login-brand { flex-basis: 100% !important; min-height: auto !important; padding: 32px 24px !important; border-right: 0 !important; border-bottom: 1px solid ${C.line}; }
           .login-brand h1 { font-size: 46px !important; }
@@ -126,13 +149,14 @@ export default function Login() {
           <path d="M20 240 C 180 240, 240 160, 360 150 S 500 120, 540 110" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1" />
           <circle cx="20" cy="220" r="5" fill={C.bg} stroke={C.gold} strokeWidth="1.4" />
           <circle cx="300" cy="90" r="3" fill={C.gold} />
+          <circle className="route-ping" cx="540" cy="30" r="5" fill={C.gold} />
           <circle cx="540" cy="30" r="5" fill={C.gold} />
         </svg>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 520 }}>
-          <h1 style={{ fontFamily: SERIF, fontWeight: 400, fontSize: 72, lineHeight: 0.98, letterSpacing: '-0.015em' }}>
-            Every mile,<br />
-            <span style={{ fontStyle: 'italic', color: C.gold }}>accounted for.</span>
+        <div className="login-in" style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 520 }}>
+          <h1 className="login-headline" style={{ fontFamily: SERIF, fontWeight: 400, fontSize: 72, lineHeight: 0.98, letterSpacing: '-0.015em' }}>
+            <span className="line">Every mile,</span>
+            <span className="line" style={{ fontStyle: 'italic', color: C.gold }}>accounted for.</span>
           </h1>
           <p style={{ color: C.dim, fontSize: 17, lineHeight: 1.6, maxWidth: 440 }}>
             Loads, drivers, brokers and invoices — one quiet place to run the whole fleet.
@@ -146,7 +170,7 @@ export default function Login() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '56px 24px',
       }}>
-        <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 26 }}>
+        <form className="login-in" onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 26 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div className="login-label">Welcome back</div>
             <h2 style={{ fontFamily: SERIF, fontWeight: 400, fontSize: 44, lineHeight: 1 }}>Sign in</h2>

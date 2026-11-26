@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { analyticsApi, driversApi, brokersApi } from '../utils/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Download } from 'lucide-react';
+import CountUp from '../components/CountUp';
 import {
   format, parse, startOfDay, startOfWeek, startOfMonth, startOfYear,
   addDays, addMonths, addYears, differenceInCalendarDays,
@@ -436,11 +437,11 @@ export default function Analytics() {
       ) : (
         <div style={{ opacity: fetching ? 0.55 : 1, transition: 'opacity .15s' }}>
           {/* KPIs with comparison to the previous period */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginBottom: 20 }}>
+          <div className="stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginBottom: 20 }}>
             {kpis.map(k => (
               <div key={k.label} className={`stat-card ${k.color}`} title={k.hint}>
                 <div className="stat-label">{k.label}</div>
-                <div className="stat-value" style={{ fontSize: 32 }}>{k.fmt(cur[k.key])}</div>
+                <div className="stat-value" style={{ fontSize: 32 }}><CountUp value={k.fmt(cur[k.key])} /></div>
                 <Delta cur={cur[k.key]} prev={prevSum ? prevSum[k.key] : null} fmt={k.fmt} label={period.prevLabel} complete={period.complete} invert={k.invert} />
               </div>
             ))}
