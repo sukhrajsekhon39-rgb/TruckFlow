@@ -274,6 +274,22 @@ input[type="date"].form-control, input[type="datetime-local"].form-control { col
 [data-theme="light"] input[type="date"].form-control,
 [data-theme="light"] input[type="datetime-local"].form-control { color-scheme: light; }
 
+/* iOS Safari: date/time inputs ignore width:100% and spill out of their box */
+@supports (-webkit-touch-callout: none) {
+  input[type="date"].form-control,
+  input[type="datetime-local"].form-control,
+  input[type="time"].form-control {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 48px;
+    text-align: left;
+  }
+  input[type="date"].form-control::-webkit-date-and-time-value,
+  input[type="datetime-local"].form-control::-webkit-date-and-time-value { text-align: left; }
+}
+
 /* ══════════════════════════════════════════════
    STATUS BADGES — hairline pill + colour dot
 ══════════════════════════════════════════════ */
@@ -385,6 +401,8 @@ tbody td:first-child {
   border-top: 1px solid var(--border);
   background: var(--bg-card);
   border-radius: 0 0 22px 22px;
+  /* Save / Cancel stay visible while the form scrolls */
+  position: sticky; bottom: 0; z-index: 1;
 }
 
 /* ══════════════════════════════════════════════
@@ -723,10 +741,21 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
     max-width: 100% !important;
     width: 100% !important;
     max-height: 92vh;
+    /* dvh = the visible screen on phones (excludes Safari's toolbars) */
+    max-height: calc(100dvh - 24px);
     border-radius: 22px 22px 0 0;
   }
   .modal-lg     { max-width: 100% !important; }
-  .modal-footer { border-radius: 0; }
+  .modal-footer {
+    border-radius: 0;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  }
+  .modal-footer .btn { flex: 1; }
+  .modal-header { padding: 18px 20px; }
+  .modal-body   { padding: 20px; }
+
+  /* 16px+ stops iPhones auto-zooming the page when a field is tapped */
+  .form-control { font-size: 16px; }
 
   .card         { padding: 18px; }
   .mobile-full  { width: 100%; justify-content: center; }

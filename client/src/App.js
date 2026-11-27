@@ -14,7 +14,6 @@ import Trailers from './pages/Trailers';
 import Brokers from './pages/Brokers';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
-import GmailInbox from './pages/GmailInbox';
 
 export default function App() {
   return (
@@ -56,7 +55,6 @@ export default function App() {
           <Route path="brokers"    element={<Brokers />} />
           <Route path="analytics"  element={<Analytics />} />
           <Route path="settings"   element={<Settings />} />
-          <Route path="gmail"      element={<GmailInbox />} />
         </Route>
       </Routes>
     </BrowserRouter>

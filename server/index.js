@@ -24,7 +24,6 @@ app.use('/api/analytics', auth, require('./routes/analytics'));
 app.use('/api/invoices',  auth, require('./routes/invoices'));
 app.use('/api/miles',     auth, require('./routes/miles'));
 app.use('/api/places',    auth, require('./routes/places'));
-app.use('/api/gmail',     auth, require('./routes/gmail'));
 
 // Serve React build in production
 const clientBuild = path.join(__dirname, '../client/build');

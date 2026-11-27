@@ -3,7 +3,7 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, Users, Truck, Container,
   Building2, BarChart3, Settings, ChevronLeft, ChevronRight,
-  Mail, Zap, X, Menu, Sun, Moon, LogOut,
+  Zap, X, Menu, Sun, Moon, LogOut,
 } from 'lucide-react';
 
 const navItems = [
@@ -14,14 +14,12 @@ const navItems = [
   { path: '/trailers',  icon: Container,       label: 'Trailers'  },
   { path: '/brokers',   icon: Building2,       label: 'Brokers'   },
   { path: '/analytics', icon: BarChart3,       label: 'Analytics' },
-  { path: '/gmail',     icon: Mail,            label: 'Gmail'     },
   { path: '/settings',  icon: Settings,        label: 'Settings'  },
 ];
 
 const mobileNavItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Home'      },
   { path: '/loads',     icon: Package,         label: 'Loads'     },
-  { path: '/gmail',     icon: Mail,            label: 'Gmail'     },
   { path: '/analytics', icon: BarChart3,       label: 'Analytics' },
   { path: '/settings',  icon: Settings,        label: 'Settings'  },
 ];
@@ -179,7 +177,7 @@ export default function Layout() {
           .filter-row .search-bar { min-width: 100% !important; }
           .hide-mobile { display: none !important; }
           .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
-          .modal { max-width: 100% !important; width: 100% !important; border-radius: 22px 22px 0 0 !important; max-height: 92vh !important; }
+          .modal { max-width: 100% !important; width: 100% !important; border-radius: 22px 22px 0 0 !important; max-height: calc(100dvh - 24px) !important; }
           .modal-lg { max-width: 100% !important; }
           table { min-width: 100%; width: max-content; }
         }
@@ -415,6 +413,34 @@ export default function Layout() {
                   </NavLink>
                 );
               })}
+
+              {/* Account */}
+              <div style={{ borderTop: `1px solid ${C.line}`, margin: '10px 4px 0', paddingTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: 'linear-gradient(135deg,#2A2A2E,#18181B)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: C.gold, fontSize: 13, fontWeight: 600, flexShrink: 0,
+                }}>
+                  {initials(username)}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, color: C.text, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</div>
+                  <div style={{ fontSize: 12.5, color: C.faint }}>Signed in</div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    height: 44, padding: '0 16px', borderRadius: 999,
+                    border: '1px solid rgba(233,149,149,0.35)', background: 'transparent',
+                    color: C.red, fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                  }}
+                >
+                  <LogOut size={16} strokeWidth={1.8} /> Sign out
+                </button>
+              </div>
             </div>
           </>
         )}
