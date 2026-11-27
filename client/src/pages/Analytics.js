@@ -8,6 +8,8 @@ import {
   format, parse, startOfDay, startOfWeek, startOfMonth, startOfYear,
   addDays, addMonths, addYears, differenceInCalendarDays,
 } from 'date-fns';
+import DateTimePicker from '../components/DateTimePicker';
+import Select, { STATUS_DOTS } from '../components/Select';
 
 const WEEK_OPTS = { weekStartsOn: 1 }; // 1 = Monday, change to 0 for Sunday
 const ALL_START = new Date(2000, 0, 1);
@@ -165,8 +167,6 @@ function Field({ label, children }) {
   );
 }
 
-const ctl = { width: 'auto', minWidth: 140, padding: '7px 10px', fontSize: 13 };
-
 function Delta({ cur, prev, fmt, label, complete, invert }) {
   if (prev == null || cur == null) return <div className="stat-sub">&nbsp;</div>;
   if (!complete) return <div className="stat-sub">{label}: {fmt(prev)}</div>;
@@ -236,14 +236,15 @@ function DataTable({ columns, rows, initialKey, limit = 10, onRowClick }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
             <span style={{ fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Sort by</span>
-            <select
-              className="form-control"
-              style={{ padding: '6px 12px', fontSize: 16, flex: 1, minWidth: 0 }}
+            <Select
+              compact
+              style={{ flex: 1, minWidth: 0 }}
               value={sort.key}
-              onChange={e => setSort(s => ({ key: e.target.value, dir: s.dir }))}
+              onChange={v => setSort(s => ({ key: v, dir: s.dir }))}
+              aria-label="Sort by"
             >
               {columns.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
-            </select>
+            </Select>
             <button
               className="btn btn-secondary btn-sm btn-icon"
               aria-label={sort.dir === 'asc' ? 'Sorted ascending' : 'Sorted descending'}
@@ -446,42 +447,42 @@ export default function Analytics() {
       <div className="card" style={{ marginBottom: 16, padding: '14px 16px' }}>
         <div className="filter-row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <Field label="Period">
-            <select className="form-control" style={ctl} value={preset} onChange={e => setPreset(e.target.value)}>
+            <Select compact value={preset} onChange={setPreset}>
               {PRESETS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </select>
+            </Select>
           </Field>
           {preset === 'custom' && (
             <>
-              <Field label="From"><input type="date" className="form-control" style={ctl} value={from} onChange={e => setFrom(e.target.value)} /></Field>
-              <Field label="To"><input type="date" className="form-control" style={ctl} value={to} onChange={e => setTo(e.target.value)} /></Field>
+              <Field label="From"><DateTimePicker mode="date" compact clearable={false} value={from} onChange={setFrom} placeholder="From" /></Field>
+              <Field label="To"><DateTimePicker mode="date" compact clearable={false} value={to} onChange={setTo} placeholder="To" /></Field>
             </>
           )}
           <Field label="Driver">
-            <select className="form-control" style={ctl} value={driver} onChange={e => setDriver(e.target.value)}>
+            <Select compact value={driver} onChange={setDriver}>
               <option value="">All drivers</option>
               {drivers.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
               <option value="none">Unassigned</option>
-            </select>
+            </Select>
           </Field>
           <Field label="Broker">
-            <select className="form-control" style={ctl} value={broker} onChange={e => setBroker(e.target.value)}>
+            <Select compact value={broker} onChange={setBroker}>
               <option value="">All brokers</option>
               {[...brokers].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
               <option value="none">No broker</option>
-            </select>
+            </Select>
           </Field>
           <Field label="Status">
-            <select className="form-control" style={ctl} value={status} onChange={e => setStatus(e.target.value)}>
+            <Select compact value={status} onChange={setStatus} dots={STATUS_DOTS}>
               <option value="">All statuses</option>
               <option value="unpaid">Unpaid (not Paid)</option>
               {STATUS_OPTS.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+            </Select>
           </Field>
           <Field label="Date basis">
-            <select className="form-control" style={ctl} value={by} onChange={e => setBy(e.target.value)}>
+            <Select compact value={by} onChange={setBy}>
               <option value="pickup">Pickup date</option>
               <option value="delivery">Delivery date</option>
-            </select>
+            </Select>
           </Field>
           {filtersActive && (
             <button className="btn btn-ghost btn-sm" onClick={() => { setDriver(''); setBroker(''); setStatus(''); }}>Clear filters</button>

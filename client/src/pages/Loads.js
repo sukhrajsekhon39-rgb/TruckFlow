@@ -5,6 +5,8 @@ import { loadsApi, driversApi, trucksApi, trailersApi, brokersApi, milesApi } fr
 import { Plus, Search, Filter, Trash2, Eye, MapPin, Navigation, Package, ChevronUp, ChevronDown, ChevronsUpDown, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import AddressAutocomplete from '../components/AddressAutocomplete';
+import DateTimePicker from '../components/DateTimePicker';
+import Select, { STATUS_DOTS } from '../components/Select';
 
 const STATUS_OPTIONS = ['Pending', 'In Transit', 'Delivered', 'Invoiced', 'Paid'];
 
@@ -130,9 +132,9 @@ function LoadModal({ load, onClose, onSaved, drivers, trucks, trailers, brokers 
           {/* Row 1: Status / Load# / Rate */}
           <G cols="1fr 1fr 1fr" isMobile={isMobile}>
             <F label="Status">
-              <select className="form-control" value={form.status} onChange={e => set('status', e.target.value)}>
+              <Select value={form.status} onChange={v => set('status', v)} dots={STATUS_DOTS}>
                 {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
-              </select>
+              </Select>
             </F>
             <F label="Load # (auto if blank)">
               <input className="form-control mono" value={form.loadNumber} onChange={e => set('loadNumber', e.target.value)} placeholder="TF-00001" />
@@ -145,32 +147,32 @@ function LoadModal({ load, onClose, onSaved, drivers, trucks, trailers, brokers 
           {/* Row 2: Driver / Truck / Trailer */}
           <G cols="1fr 1fr 1fr" isMobile={isMobile}>
             <F label="Driver">
-              <select className="form-control" value={form.driver} onChange={e => set('driver', e.target.value)}>
+              <Select value={form.driver} onChange={v => set('driver', v)}>
                 <option value="">Select driver</option>
                 {drivers.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
-              </select>
+              </Select>
             </F>
             <F label="Truck">
-              <select className="form-control" value={form.truck} onChange={e => set('truck', e.target.value)}>
+              <Select value={form.truck} onChange={v => set('truck', v)}>
                 <option value="">Select truck</option>
                 {trucks.map(t => <option key={t._id} value={t._id}>{t.unitNumber}{t.make ? ` – ${t.make}` : ''}</option>)}
-              </select>
+              </Select>
             </F>
             <F label="Trailer">
-              <select className="form-control" value={form.trailer} onChange={e => set('trailer', e.target.value)}>
+              <Select value={form.trailer} onChange={v => set('trailer', v)}>
                 <option value="">Select trailer</option>
                 {trailers.map(t => <option key={t._id} value={t._id}>{t.unitNumber}{t.type ? ` – ${t.type}` : ''}</option>)}
-              </select>
+              </Select>
             </F>
           </G>
 
           {/* Row 3: Broker / Commodity / Weight */}
           <G cols="1fr 1fr 1fr" isMobile={isMobile}>
             <F label="Broker">
-              <select className="form-control" value={form.broker} onChange={e => set('broker', e.target.value)}>
+              <Select value={form.broker} onChange={v => set('broker', v)}>
                 <option value="">Select broker</option>
                 {brokers.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
-              </select>
+              </Select>
             </F>
             <F label="Commodity">
               <input className="form-control" value={form.commodity} onChange={e => set('commodity', e.target.value)} placeholder="e.g. Auto Parts" />
@@ -203,7 +205,7 @@ function LoadModal({ load, onClose, onSaved, drivers, trucks, trailers, brokers 
                 />
               </F>
               <F label="Scheduled Time">
-                <input type="datetime-local" className="form-control" value={form['pickup.scheduledTime']} onChange={e => set('pickup.scheduledTime', e.target.value)} />
+                <DateTimePicker value={form['pickup.scheduledTime']} onChange={v => set('pickup.scheduledTime', v)} />
               </F>
             </G>
             <div style={{ marginTop: 10 }}>
@@ -242,7 +244,7 @@ function LoadModal({ load, onClose, onSaved, drivers, trucks, trailers, brokers 
                 />
               </F>
               <F label="Scheduled Time">
-                <input type="datetime-local" className="form-control" value={form['delivery.scheduledTime']} onChange={e => set('delivery.scheduledTime', e.target.value)} />
+                <DateTimePicker value={form['delivery.scheduledTime']} onChange={v => set('delivery.scheduledTime', v)} />
               </F>
             </G>
             <div style={{ marginTop: 10 }}>
@@ -442,10 +444,10 @@ export default function Loads() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Filter size={14} color="var(--text-muted)" />
-          <select className="form-control" style={{ width: 'auto' }} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          <Select style={{ minWidth: 170 }} value={statusFilter} onChange={setStatusFilter} dots={STATUS_DOTS} aria-label="Filter by status">
             <option value="">All Statuses</option>
             {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
-          </select>
+          </Select>
         </div>
       </div>
 

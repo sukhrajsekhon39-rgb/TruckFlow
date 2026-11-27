@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Trash2, Pencil } from 'lucide-react';
+import DateTimePicker from './DateTimePicker';
+import Select from './Select';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -157,12 +159,14 @@ export default function EntityPage({ title, api, fields, columns, emptyIcon }) {
                   <div key={f.key} className="form-group">
                     <label className="form-label">{f.label}</label>
                     {f.type === 'select' ? (
-                      <select className="form-control" value={form[f.key] || ''} onChange={e => setForm(v => ({ ...v, [f.key]: e.target.value }))}>
+                      <Select value={form[f.key] || ''} onChange={val => setForm(v => ({ ...v, [f.key]: val }))}>
                         <option value="">Select...</option>
                         {f.options.map(o => <option key={o}>{o}</option>)}
-                      </select>
+                      </Select>
                     ) : f.type === 'textarea' ? (
                       <textarea className="form-control" rows={3} value={form[f.key] || ''} onChange={e => setForm(v => ({ ...v, [f.key]: e.target.value }))} placeholder={f.placeholder} />
+                    ) : f.type === 'date' ? (
+                      <DateTimePicker mode="date" value={form[f.key] || ''} onChange={val => setForm(v => ({ ...v, [f.key]: val }))} />
                     ) : (
                       <input className="form-control" type={f.type || 'text'} value={form[f.key] || ''} placeholder={f.placeholder} onChange={e => setForm(v => ({ ...v, [f.key]: e.target.value }))} />
                     )}
@@ -174,12 +178,14 @@ export default function EntityPage({ title, api, fields, columns, emptyIcon }) {
                     <div key={f.key} className="form-group" style={f.fullWidth ? { gridColumn: '1/-1' } : {}}>
                       <label className="form-label">{f.label}</label>
                       {f.type === 'select' ? (
-                        <select className="form-control" value={form[f.key] || ''} onChange={e => setForm(v => ({ ...v, [f.key]: e.target.value }))}>
+                        <Select value={form[f.key] || ''} onChange={val => setForm(v => ({ ...v, [f.key]: val }))}>
                           <option value="">Select...</option>
                           {f.options.map(o => <option key={o}>{o}</option>)}
-                        </select>
+                        </Select>
                       ) : f.type === 'textarea' ? (
                         <textarea className="form-control" rows={3} value={form[f.key] || ''} onChange={e => setForm(v => ({ ...v, [f.key]: e.target.value }))} placeholder={f.placeholder} />
+                      ) : f.type === 'date' ? (
+                        <DateTimePicker mode="date" value={form[f.key] || ''} onChange={val => setForm(v => ({ ...v, [f.key]: val }))} />
                       ) : (
                         <input className="form-control" type={f.type || 'text'} value={form[f.key] || ''} placeholder={f.placeholder} onChange={e => setForm(v => ({ ...v, [f.key]: e.target.value }))} />
                       )}

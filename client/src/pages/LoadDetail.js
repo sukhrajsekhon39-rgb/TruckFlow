@@ -5,6 +5,7 @@ import { loadsApi } from '../utils/api';
 import { ArrowLeft, FileText, Upload, Trash2, Download, Receipt, CheckCircle, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import PdfViewerModal from '../components/PdfViewerModal';
+import Select, { STATUS_DOTS } from '../components/Select';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -229,9 +230,9 @@ export default function LoadDetail() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
-          <select className="form-control" style={{ width: isMobile ? '100%' : 'auto' }} value={load.status} onChange={e => updateStatus(e.target.value)}>
+          <Select style={{ width: isMobile ? '100%' : 'auto', minWidth: 170 }} value={load.status} onChange={updateStatus} dots={STATUS_DOTS} aria-label="Load status">
             {['Pending','In Transit','Delivered','Invoiced','Paid'].map(s => <option key={s}>{s}</option>)}
-          </select>
+          </Select>
           <button className="btn btn-primary" style={isMobile ? { width: '100%', justifyContent: 'center' } : {}} onClick={() => setShowInvoiceModal(true)} disabled={generatingInvoice}>
             <Receipt size={15} />
             {load.invoiceGenerated ? 'Re-generate Invoice' : 'Generate Invoice'}

@@ -4,6 +4,7 @@ import { analyticsApi } from '../utils/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import CountUp from '../components/CountUp';
 import { format, parse, startOfDay, startOfWeek, startOfMonth, addDays, addWeeks, addMonths } from 'date-fns';
+import DateTimePicker from '../components/DateTimePicker';
 
 function StatusBadge({ status }) {
   const map = { 'Pending': 'badge-pending', 'In Transit': 'badge-transit', 'Delivered': 'badge-delivered', 'Invoiced': 'badge-invoiced', 'Paid': 'badge-paid' };
@@ -154,9 +155,9 @@ function WorkSummary({ isMobile }) {
       {/* Custom range pickers */}
       {mode === 'custom' && (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
-          <input type="date" className="form-control" style={{ width: 'auto', minWidth: 140, padding: '6px 10px', fontSize: 13 }} value={from} onChange={e => setFrom(e.target.value)} />
+          <DateTimePicker mode="date" compact clearable={false} value={from} onChange={setFrom} placeholder="From" />
           <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>to</span>
-          <input type="date" className="form-control" style={{ width: 'auto', minWidth: 140, padding: '6px 10px', fontSize: 13 }} value={to} onChange={e => setTo(e.target.value)} />
+          <DateTimePicker mode="date" compact clearable={false} value={to} onChange={setTo} placeholder="To" />
         </div>
       )}
 
