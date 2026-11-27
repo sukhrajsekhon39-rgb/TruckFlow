@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 
 function useIsMobile() {
@@ -25,6 +26,16 @@ export default function EntityPage({ title, api, fields, columns, emptyIcon }) {
   useEffect(() => { fetchAll().finally(() => setLoading(false)); }, []);
 
   const openAdd = () => { setEditing(null); setForm({}); setShowModal(true); };
+
+  // The phone's + menu links here with ?new=1: open the Add form, then tidy the URL
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('new') !== '1') return;
+    openAdd();
+    const next = new URLSearchParams(searchParams);
+    next.delete('new');
+    setSearchParams(next, { replace: true });
+  }, [searchParams]);
   const openEdit = (item) => { setEditing(item); setForm(item); setShowModal(true); };
 
   const handleSave = async () => {

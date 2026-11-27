@@ -291,7 +291,7 @@ function LoadModal({ load, onClose, onSaved, drivers, trucks, trailers, brokers 
 export default function Loads() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loads, setLoads] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [trucks, setTrucks] = useState([]);
@@ -319,6 +319,16 @@ export default function Loads() {
       brokersApi.getAll().then(r => setBrokers(r.data)),
     ]).finally(() => setLoading(false));
   }, [fetchLoads]);
+
+  // The phone's + menu links here with ?new=1: open the Add Load form, then tidy the URL
+  useEffect(() => {
+    if (searchParams.get('new') !== '1') return;
+    setEditLoad(null);
+    setShowModal(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete('new');
+    setSearchParams(next, { replace: true });
+  }, [searchParams]);
 
   const handleDelete = async (id, e) => {
     e.stopPropagation();

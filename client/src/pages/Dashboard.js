@@ -10,6 +10,34 @@ function StatusBadge({ status }) {
   return <span className={`badge ${map[status] || ''}`}>{status}</span>;
 }
 
+// Gold trend line: running total of revenue across the period, one point per day
+function Sparkline({ loads, start, end, dateOf }) {
+  const days = Math.max(1, Math.round((end - start) / 86400000));
+  const perDay = new Array(days).fill(0);
+  loads.forEach(l => {
+    const i = Math.floor((startOfDay(dateOf(l)) - start) / 86400000);
+    if (i >= 0 && i < days) perDay[i] += l.rate || 0;
+  });
+  let run = 0;
+  const pts = perDay.map(v => (run += v));
+  const max = run || 1;
+  const W = 300, H = 60;
+  const xy = pts.map((v, i) => [days === 1 ? W : (i / (days - 1)) * W, H - 4 - (v / max) * (H - 10)]);
+  const line = xy.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
+  return (
+    <svg className="hero-spark" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="heroSparkFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--accent)" stopOpacity="0.32" />
+          <stop offset="1" stopColor="var(--accent)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={`${line} L${W} ${H} L0 ${H} Z`} fill="url(#heroSparkFill)" />
+      <path d={line} fill="none" stroke="var(--accent)" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   useEffect(() => {
@@ -93,12 +121,10 @@ function WorkSummary({ isMobile }) {
   const milesRevenue = loads.filter(l => l.miles > 0).reduce((s, l) => s + (l.rate || 0), 0); // loads with unknown miles don't skew $/mile
 
   const kpis = [
-    { label: 'Revenue', value: money(revenue), color: 'orange' },
     { label: 'Loads', value: loads.length, color: 'blue' },
     { label: 'Miles', value: miles.toLocaleString(), color: 'green' },
     { label: 'Rev / Mile', value: miles ? `$${(milesRevenue / miles).toFixed(2)}` : '—', color: 'purple' },
     { label: 'Avg Rate', value: loads.length ? money(revenue / loads.length) : '—', color: 'blue' },
-    { label: 'Unpaid', value: money(unpaid), color: 'orange' },
   ];
 
   return (
@@ -143,7 +169,20 @@ function WorkSummary({ isMobile }) {
       ) : (
         <>
           {/* Totals for the selection */}
-          <div className="stagger" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(6, 1fr)', gap: isMobile ? 10 : 14, marginBottom: 16 }}>
+          <div className="stagger" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, minmax(0, 1fr))', gap: isMobile ? 10 : 14, marginBottom: 16 }}>
+            <div className="stat-card hero">
+              <div>
+                <div className="stat-label">Revenue</div>
+                <div className="stat-value" style={{ fontSize: isMobile ? 40 : 60 }}><CountUp value={money(revenue)} /></div>
+              </div>
+              <div>
+                <Sparkline loads={loads} start={range.start} end={range.end} dateOf={dateOf} />
+                <div className="hero-foot">
+                  <span>Unpaid <strong>{money(unpaid)}</strong></span>
+                  <span>{loads.length} load{loads.length === 1 ? '' : 's'}</span>
+                </div>
+              </div>
+            </div>
             {kpis.map(k => (
               <div key={k.label} className={`stat-card ${k.color}`}>
                 <div className="stat-label">{k.label}</div>
@@ -154,7 +193,7 @@ function WorkSummary({ isMobile }) {
 
           {/* Loads for the selection */}
           <div className="card" style={{ padding: 0, minWidth: 0 }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="card-head" style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em', alignItems: 'baseline', gap: 10 }}>
                 Loads
                 <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', fontSize: 13 }}>{sorted.length}</span>
@@ -163,14 +202,15 @@ function WorkSummary({ isMobile }) {
             </div>
 
             {isMobile ? (
-              <div style={{ padding: '8px 0' }}>
+              <div style={{ padding: 10 }}>
                 {sorted.length === 0 ? (
                   <div className="empty-state"><p>No loads in this period</p></div>
                 ) : sorted.map(load => (
                   <div
                     key={load._id}
                     onClick={() => navigate(`/loads/${load._id}`)}
-                    style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}
+                    className="pill-row clickable"
+                    style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}
                   >
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -285,9 +325,9 @@ export default function Dashboard() {
       {/* Status + top drivers (all time) */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
         <div className="card">
-          <div style={{ marginBottom: 18, fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.2 }}>Load Status</div>
+          <div style={{ marginBottom: 16, fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.2 }}>Load Status</div>
           {(analytics?.statusBreakdown || []).map(s => (
-            <div key={s._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div key={s._id} className="pill-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <StatusBadge status={s._id} />
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <span style={{ fontWeight: 600, fontSize: 14 }}>{s.count}</span>
@@ -299,9 +339,9 @@ export default function Dashboard() {
         </div>
 
         <div className="card">
-          <div style={{ marginBottom: 18, fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.2 }}>Top Drivers</div>
+          <div style={{ marginBottom: 16, fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.2 }}>Top Drivers</div>
           {(analytics?.topDrivers || []).slice(0, 4).map(d => (
-            <div key={d._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div key={d._id} className="pill-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.name}</div>
                 <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{d.loads} loads · {(d.miles || 0).toLocaleString()} mi</div>

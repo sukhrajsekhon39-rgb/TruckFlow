@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import TopographicBackground from './TopographicBackground';
 import {
   LayoutDashboard, Package, Users, Truck, Container,
   Building2, BarChart3, Settings, ChevronLeft, ChevronRight,
-  Zap, X, Menu, Sun, Moon, LogOut,
+  Zap, X, Menu, LogOut, Plus,
 } from 'lucide-react';
 
 const navItems = [
@@ -18,12 +18,36 @@ const navItems = [
   { path: '/settings',  icon: Settings,        label: 'Settings'  },
 ];
 
-const mobileNavItems = [
+// Desktop sidebar groups
+const navGroups = [
+  { label: 'Operations', items: navItems.slice(0, 2) },
+  { label: 'Fleet',      items: navItems.slice(2, 6) },
+  { label: 'Insights',   items: navItems.slice(6) },
+];
+
+// Phone dock: two links, the gold + button, two links
+const mobileNavLeft = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Home'      },
   { path: '/loads',     icon: Package,         label: 'Loads'     },
+];
+const mobileNavRight = [
   { path: '/analytics', icon: BarChart3,       label: 'Analytics' },
   { path: '/settings',  icon: Settings,        label: 'Settings'  },
 ];
+
+// What the + button can add. Each page opens its "Add" form when the URL has ?new=1
+const addOptions = [
+  { path: '/loads',    icon: Package,   label: 'Load',    sub: 'New shipment with pickup and delivery' },
+  { path: '/drivers',  icon: Users,     label: 'Driver',  sub: 'Name, phone and CDL details' },
+  { path: '/trucks',   icon: Truck,     label: 'Truck',   sub: 'Unit number, make and model' },
+  { path: '/trailers', icon: Container, label: 'Trailer', sub: 'Unit number and type' },
+  { path: '/brokers',  icon: Building2, label: 'Broker',  sub: 'Company and contact' },
+];
+
+// Fine fading gold frame for the floating chrome (always obsidian)
+const GILD_FILL = 'linear-gradient(180deg,#141417,#0E0E10) padding-box';
+const GILD_EDGE = 'linear-gradient(160deg,rgba(216,188,134,0.55),rgba(216,188,134,0.06) 30%,rgba(255,255,255,0.04) 70%,rgba(216,188,134,0.30)) border-box';
+const GILD_DEPTH = 'inset 0 1px 0 rgba(255,255,255,0.05), 0 30px 60px -30px rgba(0,0,0,0.95)';
 
 // Sidebar palette — always obsidian so it reads as a frame in both themes
 const C = {
@@ -59,22 +83,22 @@ function LogoMark({ size = 40 }) {
 export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const location = useLocation();
-  const [theme, setTheme] = useState(() => localStorage.getItem('tf-theme') || 'dark');
+  const navigate = useNavigate();
 
+  // Close the phone menus whenever the page changes
+  useEffect(() => { setAddOpen(false); setMobileMenuOpen(false); }, [location.pathname, location.search]);
+
+  const startAdd = (path) => { setAddOpen(false); navigate(`${path}?new=1`); };
+
+
+  // The app is dark only (the light theme was removed)
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('tf-theme', theme);
-  }, [theme]);
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.removeItem('tf-theme');
+  }, []);
 
-  // Cross-fade colours briefly while the theme switches
-  const toggleTheme = () => {
-    const root = document.documentElement;
-    root.classList.add('theme-anim');
-    setTheme(t => t === 'dark' ? 'light' : 'dark');
-    window.clearTimeout(window.__tfThemeTimer);
-    window.__tfThemeTimer = window.setTimeout(() => root.classList.remove('theme-anim'), 500);
-  };
   const closeMenu   = () => setMobileMenuOpen(false);
   const username    = localStorage.getItem('tf-user') || 'Admin';
 
@@ -87,13 +111,14 @@ export default function Layout() {
   const S = {
     navLink: (active) => ({
       display: 'flex', alignItems: 'center', gap: 12,
-      padding: collapsed ? '11px 0' : '10px 14px',
+      padding: collapsed ? '9px 0' : '8px 14px',
       justifyContent: collapsed ? 'center' : 'flex-start',
-      borderRadius: 10,
+      borderRadius: 12,
       fontSize: 15,
       fontWeight: active ? 600 : 500,
       color: active ? C.text : C.dim,
-      background: active ? 'rgba(255,255,255,0.06)' : 'transparent',
+      background: active ? 'linear-gradient(90deg,rgba(216,188,134,0.12),rgba(216,188,134,0.02))' : 'transparent',
+      boxShadow: active ? 'inset 0 0 0 1px rgba(216,188,134,0.22)' : 'none',
       transition: 'all 0.2s ease',
       cursor: 'pointer',
       textDecoration: 'none',
@@ -104,20 +129,11 @@ export default function Layout() {
       width: 6, height: 6, borderRadius: '50%',
       background: C.gold, marginLeft: 'auto', flexShrink: 0,
     },
-    footerBtn: {
-      background: 'transparent',
-      border: 'none',
-      cursor: 'pointer',
-      display: 'flex', alignItems: 'center', gap: 12,
-      padding: '9px 14px',
-      minHeight: 40,
-      borderRadius: 10,
-      width: '100%',
-      color: C.dim,
-      fontSize: 14,
-      fontWeight: 500,
-      fontFamily: 'inherit',
-      transition: 'all 0.2s ease',
+    iconBtn: {
+      width: 34, height: 34, flexShrink: 0, padding: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'transparent', border: 'none', borderRadius: 10,
+      color: C.dim, cursor: 'pointer',
     },
   };
 
@@ -131,6 +147,33 @@ export default function Layout() {
           background: rgba(255,255,255,0.04) !important;
           color: ${C.text} !important;
         }
+        .sidebar-nav-link.is-active:hover { background: linear-gradient(90deg,rgba(216,188,134,0.16),rgba(216,188,134,0.03)) !important; }
+        /* Glowing gold marker on the card's edge beside the current page */
+        .sidebar-nav-link.is-active::before {
+          content: ''; position: absolute; left: -16px; top: 10px; bottom: 10px; width: 3px;
+          border-radius: 0 3px 3px 0; background: ${C.gold}; box-shadow: 0 0 12px rgba(216,188,134,0.95);
+        }
+        .nav-grp {
+          display: flex; align-items: baseline; gap: 8px;
+          padding: 12px 14px 5px; white-space: nowrap;
+          font-size: 10.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #C9AE7E;
+        }
+        .nav-grp:first-child { padding-top: 4px; }
+        .nav-sep { height: 1px; margin: 10px 14px; background: rgba(216,188,134,0.18); }
+        .nav-sep:first-child { display: none; }
+        /* Phone dock */
+        .dock-link.active { background: rgba(216,188,134,0.10); box-shadow: inset 0 0 0 1px rgba(216,188,134,0.22); }
+        .dock-fab { transition: transform .35s cubic-bezier(0.34,1.4,0.64,1), box-shadow .3s ease; }
+        .dock-fab:active { transform: scale(0.92); }
+        .dock-fab svg { transition: transform .35s cubic-bezier(0.34,1.4,0.64,1); }
+        .dock-fab.open svg { transform: rotate(45deg); }
+        .add-sheet { animation: sheetUp .28s cubic-bezier(0.22,1,0.36,1); }
+        .add-sheet > button { animation: sideIn .45s cubic-bezier(0.22,1,0.36,1) backwards; }
+        .add-sheet > button:nth-child(2) { animation-delay: .03s; } .add-sheet > button:nth-child(3) { animation-delay: .06s; }
+        .add-sheet > button:nth-child(4) { animation-delay: .09s; } .add-sheet > button:nth-child(5) { animation-delay: .12s; }
+        .add-sheet > button:nth-child(6) { animation-delay: .15s; }
+        .add-opt:active { background: rgba(216,188,134,0.10) !important; }
+        @keyframes sheetUp { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
         .sidebar-nav-link svg { transition: transform .35s cubic-bezier(0.34,1.4,0.64,1), color .3s ease; }
         .sidebar-nav-link:hover svg { transform: translateX(2px) scale(1.08); }
         .nav-dot { animation: dotPop .45s cubic-bezier(0.34,1.6,0.64,1) backwards; }
@@ -153,8 +196,7 @@ export default function Layout() {
         .bottom-nav-link svg { transition: transform .4s cubic-bezier(0.34,1.6,0.64,1); }
         .bottom-nav-link.active svg { transform: translateY(-2px) scale(1.08); }
         .bottom-nav-link:active svg { transform: scale(0.88); }
-        .mobile-theme-btn svg { transition: transform .6s cubic-bezier(0.34,1.4,0.64,1); }
-        .mobile-theme-btn:active svg, .sidebar-footer-btn:active svg { transform: rotate(90deg) scale(0.9); }
+        .sidebar-footer-btn:active svg { transform: scale(0.9); }
         .sidebar-footer-btn svg { transition: transform .5s cubic-bezier(0.34,1.4,0.64,1); }
         .sidebar-footer-btn:hover {
           background: rgba(255,255,255,0.04) !important;
@@ -169,8 +211,8 @@ export default function Layout() {
           .mobile-header   { display: flex !important; }
           .mobile-bottom-nav { display: flex !important; }
           .main-content {
-            padding: calc(20px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(100px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)) !important;
-            margin-top: 60px !important;
+            padding: calc(24px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(124px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)) !important;
+            margin-top: 66px !important;
           }
           .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
           .dashboard-two-col { grid-template-columns: 1fr !important; }
@@ -189,7 +231,7 @@ export default function Layout() {
           table { min-width: 100%; width: max-content; }
         }
         @media (max-width: 390px) {
-          .main-content { padding: calc(16px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(100px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)) !important; }
+          .main-content { padding: calc(20px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(124px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)) !important; }
         }
       `}</style>
 
@@ -200,15 +242,18 @@ export default function Layout() {
           className="desktop-sidebar"
           style={{
             width: collapsed ? 76 : 248,
-            background: C.bg,
-            borderRight: `1px solid ${C.line}`,
+            margin: '14px 0 14px 14px',
+            borderRadius: 22,
+            border: '1px solid transparent',
+            background: `${GILD_FILL}, ${GILD_EDGE}`,
+            boxShadow: GILD_DEPTH,
             display: 'flex',
             flexDirection: 'column',
             transition: 'width 0.3s cubic-bezier(0.22,1,0.36,1)',
             flexShrink: 0,
             position: 'sticky',
-            top: 0,
-            height: '100vh',
+            top: 14,
+            height: 'calc(100vh - 28px)',
             overflow: 'hidden',
             zIndex: 100,
           }}
@@ -216,7 +261,7 @@ export default function Layout() {
           {/* Logo */}
           <div className="logo-link" style={{
             display: 'flex', alignItems: 'center', gap: 12,
-            padding: collapsed ? '28px 0 0' : '28px 26px 0',
+            padding: collapsed ? '22px 0 0' : '22px 24px 0',
             justifyContent: collapsed ? 'center' : 'flex-start',
           }}>
             <LogoMark />
@@ -238,93 +283,62 @@ export default function Layout() {
           {/* Nav */}
           <nav className="side-anim" style={{
             flex: 1,
-            padding: '36px 16px 12px',
+            padding: '18px 16px 10px',
             display: 'flex', flexDirection: 'column', gap: 2,
             overflowY: 'auto', overflowX: 'hidden',
           }}>
-            {navItems.map(({ path, icon: Icon, label }) => {
-              const active = location.pathname.startsWith(path);
-              return (
-                <NavLink
-                  key={path}
-                  to={path}
-                  className="sidebar-nav-link"
-                  style={S.navLink(active)}
-                  title={collapsed ? label : undefined}
-                >
-                  <Icon size={18} strokeWidth={1.8} color={active ? C.gold : undefined} style={{ flexShrink: 0 }} />
-                  {!collapsed && <span>{label}</span>}
-                  {!collapsed && active && <span className="nav-dot" style={S.activeDot} />}
-                </NavLink>
-              );
-            })}
+            {navGroups.map(g => (
+              <React.Fragment key={g.label}>
+                {collapsed
+                  ? <div className="nav-sep" />
+                  : <div className="nav-grp">{g.label}</div>}
+                {g.items.map(({ path, icon: Icon, label }) => {
+                  const active = location.pathname.startsWith(path);
+                  return (
+                    <NavLink
+                      key={path}
+                      to={path}
+                      className={`sidebar-nav-link${active ? ' is-active' : ''}`}
+                      style={S.navLink(active)}
+                      title={collapsed ? label : undefined}
+                    >
+                      <Icon size={18} strokeWidth={1.8} color={active ? C.gold : undefined} style={{ flexShrink: 0 }} />
+                      {!collapsed && <span>{label}</span>}
+                    </NavLink>
+                  );
+                })}
+              </React.Fragment>
+            ))}
           </nav>
 
-          {/* Footer */}
-          <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* User info */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              padding: collapsed ? '14px 0' : '14px 10px',
-              borderTop: `1px solid ${C.line}`,
-              marginBottom: 6,
+          {/* Footer: account row with sign-out and collapse */}
+          <div style={{
+            margin: '0 12px', padding: collapsed ? '12px 0 14px' : '12px 4px 14px',
+            borderTop: '1px solid rgba(216,188,134,0.12)',
+            display: 'flex', flexDirection: collapsed ? 'column' : 'row',
+            alignItems: 'center', gap: collapsed ? 6 : 10,
+          }}>
+            <div title={collapsed ? username : undefined} style={{
+              width: 34, height: 34, borderRadius: '50%',
+              background: 'linear-gradient(135deg,#2A2A2E,#18181B)',
+              border: '1px solid rgba(216,188,134,0.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: C.gold, fontSize: 13, fontWeight: 600, flexShrink: 0,
             }}>
-              <div style={{
-                width: 34, height: 34, borderRadius: '50%',
-                background: 'linear-gradient(135deg,#2A2A2E,#18181B)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: C.gold, fontSize: 13, fontWeight: 600, flexShrink: 0,
-              }}>
-                {initials(username)}
-              </div>
-              {!collapsed && (
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 14, color: C.text, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</div>
-                  <div style={{ fontSize: 12.5, color: C.faint }}>Signed in</div>
-                </div>
-              )}
+              {initials(username)}
             </div>
-
-            {/* Theme toggle */}
-            <button
-              className="sidebar-footer-btn"
-              style={{ ...S.footerBtn, justifyContent: collapsed ? 'center' : 'flex-start' }}
-              onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {theme === 'dark'
-                ? <Sun size={17} strokeWidth={1.8} />
-                : <Moon size={17} strokeWidth={1.8} />
-              }
-              {!collapsed && (
-                <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
-              )}
+            {!collapsed && (
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: 14, color: C.text, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</div>
+                <div style={{ fontSize: 12.5, color: C.faint }}>Signed in</div>
+              </div>
+            )}
+            <button className="sidebar-footer-btn" style={S.iconBtn} onClick={handleLogout} aria-label="Sign out" title="Sign out">
+              <LogOut size={16} strokeWidth={1.8} />
             </button>
-
-            {/* Logout */}
-            <button
-              className="sidebar-footer-btn"
-              style={{ ...S.footerBtn, justifyContent: collapsed ? 'center' : 'flex-start' }}
-              onClick={handleLogout}
-              aria-label="Sign out"
-            >
-              <LogOut size={17} strokeWidth={1.8} />
-              {!collapsed && <span>Sign out</span>}
-            </button>
-
-            {/* Collapse */}
-            <button
-              className="sidebar-footer-btn"
-              style={{ ...S.footerBtn, justifyContent: collapsed ? 'center' : 'flex-start' }}
-              onClick={() => setCollapsed(c => !c)}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              {collapsed
-                ? <ChevronRight size={17} strokeWidth={1.8} />
-                : <><ChevronLeft size={17} strokeWidth={1.8} /><span>Collapse</span></>
-              }
+            <button className="sidebar-footer-btn" style={S.iconBtn} onClick={() => setCollapsed(c => !c)}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} title={collapsed ? 'Expand' : 'Collapse'}>
+              {collapsed ? <ChevronRight size={16} strokeWidth={1.8} /> : <ChevronLeft size={16} strokeWidth={1.8} />}
             </button>
           </div>
         </aside>
@@ -334,13 +348,18 @@ export default function Layout() {
           className="mobile-header"
           style={{
             display: 'none',
-            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 300,
-            background: 'rgba(10,10,11,0.86)',
+            position: 'fixed', zIndex: 300,
+            top: 'calc(10px + env(safe-area-inset-top, 0px))',
+            left: 'max(12px, env(safe-area-inset-left, 0px))',
+            right: 'max(12px, env(safe-area-inset-right, 0px))',
+            height: 56,
+            borderRadius: 18,
+            border: '1px solid transparent',
+            background: `linear-gradient(180deg,rgba(20,20,23,0.92),rgba(14,14,16,0.92)) padding-box, ${GILD_EDGE}`,
+            boxShadow: GILD_DEPTH,
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
-            borderBottom: `1px solid ${C.line}`,
-            padding: 'env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px))',
-            height: 'calc(60px + env(safe-area-inset-top, 0px))',
+            padding: '0 4px 0 12px',
             alignItems: 'center', justifyContent: 'space-between',
           }}
         >
@@ -351,18 +370,6 @@ export default function Layout() {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <button
-              className="mobile-theme-btn"
-              onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              style={{
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                width: 44, height: 44, borderRadius: 999, display: 'flex',
-                alignItems: 'center', justifyContent: 'center', color: C.dim,
-              }}
-            >
-              {theme === 'dark' ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
-            </button>
             <button
               onClick={() => setMobileMenuOpen(o => !o)}
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -389,11 +396,16 @@ export default function Layout() {
               }}
             />
             <div className="side-anim" style={{
-              position: 'fixed', top: 'calc(60px + env(safe-area-inset-top, 0px))', left: 0, right: 0, zIndex: 290,
-              maxHeight: 'calc(100dvh - 60px - env(safe-area-inset-top, 0px))', overflowY: 'auto',
-              background: C.bg,
-              borderBottom: `1px solid ${C.line}`,
-              padding: '10px 12px 16px',
+              position: 'fixed', zIndex: 290,
+              top: 'calc(74px + env(safe-area-inset-top, 0px))',
+              left: 'max(12px, env(safe-area-inset-left, 0px))',
+              right: 'max(12px, env(safe-area-inset-right, 0px))',
+              maxHeight: 'calc(100dvh - 90px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))', overflowY: 'auto',
+              borderRadius: 20,
+              border: '1px solid transparent',
+              background: `${GILD_FILL}, ${GILD_EDGE}`,
+              boxShadow: GILD_DEPTH,
+              padding: '10px 10px 14px',
               animation: 'slideDown 0.2s ease',
             }}>
               {navItems.map(({ path, icon: Icon, label }) => {
@@ -466,41 +478,125 @@ export default function Layout() {
           </div>
         </main>
 
-        {/* ── MOBILE BOTTOM NAV ── */}
+        {/* ── MOBILE "ADD" SHEET (opened by the + button) ── */}
+        {addOpen && (
+          <>
+            <div
+              onClick={() => setAddOpen(false)}
+              style={{ position: 'fixed', inset: 0, zIndex: 305, background: 'rgba(5,5,6,0.66)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
+            />
+            <div
+              className="add-sheet"
+              role="menu"
+              aria-label="Add new"
+              style={{
+                position: 'fixed', zIndex: 310,
+                left: 'max(12px, env(safe-area-inset-left, 0px))',
+                right: 'max(12px, env(safe-area-inset-right, 0px))',
+                bottom: 'calc(104px + env(safe-area-inset-bottom, 0px))',
+                borderRadius: 22,
+                border: '1px solid transparent',
+                background: `${GILD_FILL}, ${GILD_EDGE}`,
+                boxShadow: GILD_DEPTH,
+                padding: 10,
+                display: 'flex', flexDirection: 'column', gap: 6,
+              }}
+            >
+              <div style={{ padding: '6px 8px 4px', fontSize: 10.5, fontWeight: 600, letterSpacing: '.12em', textTransform: 'uppercase', color: '#C9AE7E' }}>
+                Add new
+              </div>
+              {addOptions.map(({ path, icon: Icon, label, sub }) => (
+                <button
+                  key={path}
+                  role="menuitem"
+                  className="add-opt"
+                  onClick={() => startAdd(path)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14, width: '100%',
+                    padding: '10px 12px', minHeight: 60, borderRadius: 14,
+                    border: 'none', borderTop: '1px solid rgba(255,255,255,0.035)',
+                    background: 'rgba(255,255,255,0.026)', color: C.text,
+                    fontFamily: 'inherit', textAlign: 'left', cursor: 'pointer',
+                  }}
+                >
+                  <span style={{
+                    width: 38, height: 38, borderRadius: 12, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(216,188,134,0.10)', boxShadow: 'inset 0 0 0 1px rgba(216,188,134,0.25)',
+                  }}>
+                    <Icon size={18} strokeWidth={1.8} color={C.gold} />
+                  </span>
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ display: 'block', fontSize: 15.5, fontWeight: 600 }}>{label}</span>
+                    <span style={{ display: 'block', fontSize: 12.5, color: C.faint, marginTop: 1 }}>{sub}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* ── MOBILE BOTTOM DOCK ── */}
         <nav
           className="mobile-bottom-nav"
           style={{
             display: 'none',
-            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 300,
-            background: 'rgba(10,10,11,0.9)',
+            position: 'fixed', zIndex: addOpen ? 315 : 300, // stays above the add menu's backdrop so + can close it
+            left: 'max(12px, env(safe-area-inset-left, 0px))',
+            right: 'max(12px, env(safe-area-inset-right, 0px))',
+            bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+            height: 66,
+            borderRadius: 24,
+            border: '1px solid transparent',
+            background: `linear-gradient(180deg,rgba(20,20,23,0.94),rgba(14,14,16,0.94)) padding-box, ${GILD_EDGE}`,
+            boxShadow: GILD_DEPTH,
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
-            borderTop: `1px solid ${C.line}`,
-            padding: `8px env(safe-area-inset-right, 0px) calc(8px + env(safe-area-inset-bottom, 0px)) env(safe-area-inset-left, 0px)`,
+            padding: '0 6px',
             justifyContent: 'space-around',
             alignItems: 'center',
           }}
         >
-          {mobileNavItems.map(({ path, icon: Icon, label }) => {
+          {[...mobileNavLeft, null, ...mobileNavRight].map(item => {
+            if (!item) {
+              return (
+                <button
+                  key="add"
+                  className={`dock-fab${addOpen ? ' open' : ''}`}
+                  onClick={() => setAddOpen(o => !o)}
+                  aria-label={addOpen ? 'Close add menu' : 'Add new'}
+                  aria-expanded={addOpen}
+                  style={{
+                    width: 56, height: 56, marginTop: -30, borderRadius: 18, flexShrink: 0,
+                    border: 'none', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'linear-gradient(145deg,#E6CC98,#C9A86C)', color: '#0A0A0B',
+                    boxShadow: '0 0 28px -4px rgba(216,188,134,0.65), 0 10px 24px -8px #000, inset 0 1px 0 rgba(255,255,255,0.4)',
+                  }}
+                >
+                  <Plus size={25} strokeWidth={2.2} />
+                </button>
+              );
+            }
+            const { path, icon: Icon, label } = item;
             const active = location.pathname.startsWith(path);
             return (
               <NavLink
                 key={path}
                 to={path}
-                className={`bottom-nav-link${active ? ' active' : ''}`}
+                className={`bottom-nav-link dock-link${active ? ' active' : ''}`}
                 style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                  padding: '4px 12px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+                  width: 60, height: 50, borderRadius: 14,
                   color: active ? C.gold : C.faint,
-                  fontSize: 11.5,
+                  fontSize: 11,
                   fontWeight: active ? 600 : 500,
                   letterSpacing: '0.02em',
-                  minWidth: 56,
                   textDecoration: 'none',
-                  transition: 'color 0.2s ease',
+                  transition: 'color 0.2s ease, background-color 0.2s ease',
                 }}
               >
-                <Icon size={21} strokeWidth={1.8} />
+                <Icon size={20} strokeWidth={1.8} />
                 <span>{label}</span>
               </NavLink>
             );

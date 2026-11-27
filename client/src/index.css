@@ -690,7 +690,7 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
   transform: translateZ(0); /* own layer: drawn once, not on every scroll */
 }
 .topo-lines {
-  position: absolute; inset: 0;
+  position: absolute; inset: -20%; /* 1.4x zoom: lines drawn larger and further apart */
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -712,7 +712,7 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 
 /* Glow layer: four lines softly breathe in and out.
    Each line is a static image faded with opacity (GPU-composited, cheap). */
-.topo-glow       { position: absolute; inset: 0; }
+.topo-glow       { position: absolute; inset: -20%; } /* same zoom as the lines */
 .topo-glow-dark  { opacity: 0.5; }
 .topo-glow-light { opacity: 0.4; display: none; }
 [data-theme="light"] .topo-glow-dark  { display: none; }
@@ -877,4 +877,100 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 
 @media (max-width: 390px) {
   .main-content { padding: calc(16px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(100px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+}
+
+/* ══════════════════════════════════════════════
+   GILDED BENTO — cards with depth, framed in a fine fading gold edge.
+   The frame is a gradient drawn in the 1px transparent border
+   (padding-box = card fill, border-box = gold edge). Static: no animation.
+══════════════════════════════════════════════ */
+:root {
+  --surface:      linear-gradient(180deg, #16161A, #0F0F12);
+  --gild:         linear-gradient(140deg, rgba(216,188,134,0.55), rgba(216,188,134,0.05) 36%, rgba(255,255,255,0.04) 64%, rgba(216,188,134,0.28));
+  --gild-strong:  linear-gradient(140deg, rgba(216,188,134,0.85), rgba(216,188,134,0.12) 40%, rgba(216,188,134,0.08) 60%, rgba(216,188,134,0.50));
+  --hero-wash:    radial-gradient(120% 90% at 100% 0%, rgba(216,188,134,0.15), transparent 55%);
+  --depth:        inset 0 1px 0 rgba(255,255,255,0.05), 0 30px 60px -30px rgba(0,0,0,0.95);
+  --hero-glow:    0 0 34px -10px rgba(216,188,134,0.35);
+  --gold-label:   #C9AE7E;
+  --row-bg:       rgba(255,255,255,0.026);
+  --row-edge:     rgba(255,255,255,0.035);
+  --row-hover:    rgba(216,188,134,0.07);
+  --radius-card:  22px;
+}
+[data-theme="light"] {
+  --surface:      linear-gradient(180deg, #FFFFFF, #FBFAF7);
+  --gild:         linear-gradient(140deg, rgba(138,106,50,0.50), rgba(138,106,50,0.10) 36%, rgba(17,17,19,0.07) 64%, rgba(138,106,50,0.30));
+  --gild-strong:  linear-gradient(140deg, rgba(138,106,50,0.80), rgba(138,106,50,0.18) 40%, rgba(138,106,50,0.12) 60%, rgba(138,106,50,0.50));
+  --hero-wash:    radial-gradient(120% 90% at 100% 0%, rgba(138,106,50,0.10), transparent 55%);
+  --depth:        inset 0 1px 0 rgba(255,255,255,0.9), 0 24px 48px -28px rgba(17,17,19,0.22);
+  --hero-glow:    0 0 0 transparent;
+  --gold-label:   #7A5C25;
+  --row-bg:       rgba(17,17,19,0.025);
+  --row-edge:     rgba(255,255,255,0.9);
+  --row-hover:    rgba(138,106,50,0.07);
+}
+
+.card, .stat-card {
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+  background: var(--surface) padding-box, var(--gild) border-box;
+  box-shadow: var(--depth);
+}
+.card:hover { border-color: transparent; }
+.stat-card:hover { border-color: transparent; box-shadow: var(--depth), var(--shadow); }
+.stat-card::after { border-radius: inherit; }
+
+/* Gold labels */
+.stat-label { color: var(--gold-label); }
+thead th    { color: var(--gold-label); border-bottom: none; }
+
+/* Hero tile (Dashboard revenue) — brighter edge, warm wash, soft glow */
+.stat-card.hero {
+  grid-column: span 2; grid-row: span 2;
+  padding: 26px 26px 22px;
+  justify-content: space-between;
+  background: var(--hero-wash) padding-box, var(--surface) padding-box, var(--gild-strong) border-box;
+  box-shadow: var(--hero-glow), var(--depth);
+}
+.stat-card.hero .stat-value { color: var(--accent); }
+.hero-spark { display: block; width: 100%; height: 64px; margin-top: 14px; overflow: visible; }
+.hero-foot  { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; font-size: 13.5px; color: var(--text-secondary); }
+.hero-foot strong { color: var(--text-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.card-head { border-bottom: 1px solid rgba(216,188,134,0.12) !important; }
+[data-theme="light"] .card-head { border-bottom-color: rgba(138,106,50,0.14) !important; }
+
+/* Tables — every row is a soft rounded pill; hover turns it gold with a marker */
+.table-container { padding: 2px 12px 8px; }
+table { border-collapse: separate; border-spacing: 0 7px; }
+thead th { padding: 12px 18px 2px; }
+tbody tr, tbody tr:hover { border-bottom: none; background: transparent; }
+tbody td {
+  background: var(--row-bg);
+  border-top: 1px solid var(--row-edge);
+  padding: 15px 18px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+tbody td:first-child { border-radius: 14px 0 0 14px; box-shadow: inset 2px 0 0 transparent; }
+tbody td:last-child  { border-radius: 0 14px 14px 0; }
+tbody td:only-child  { border-radius: 14px; }
+tbody tr:hover td    { background: var(--row-hover); }
+tbody tr:hover td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+
+/* Pill rows outside tables (status list, top drivers, phone load lists) */
+.pill-row {
+  background: var(--row-bg);
+  border-top: 1px solid var(--row-edge);
+  border-radius: 14px;
+  padding: 12px 16px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.pill-row + .pill-row { margin-top: 8px; }
+a.pill-row:hover, .pill-row.clickable:hover { background: var(--row-hover); box-shadow: inset 2px 0 0 var(--accent); }
+
+@media (max-width: 768px) {
+  .card, .stat-card { border-radius: 18px; }
+  .stat-card.hero { grid-row: span 1; padding: 18px 18px 16px; }
+  .hero-spark { height: 48px; margin-top: 10px; }
+  .table-container { padding: 2px 8px 6px; }
 }
