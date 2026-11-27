@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Zap, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { authApi } from '../utils/api';
+import TopographicBackground from '../components/TopographicBackground';
 
 // The sign-in page is always obsidian, whatever theme the app is set to.
 const C = {
@@ -55,7 +56,7 @@ export default function Login() {
           height: 52px; padding: 0 18px;
           border: 1px solid ${C.field};
           border-radius: 14px;
-          background: rgba(255,255,255,0.02);
+          background: #0E0E10;
           transition: all 0.2s ease;
         }
         .login-field:hover { border-color: rgba(255,255,255,0.22); }
@@ -104,31 +105,21 @@ export default function Login() {
         .login-headline span.line { display: block; animation: loginRise 1.1s cubic-bezier(0.22,1,0.36,1) backwards; }
         .login-headline span.line:nth-child(2) { animation-delay: .5s; }
         .login-route { animation: drawRoute 2.2s cubic-bezier(0.65,0,0.35,1) .3s backwards; }
-        .route-ping { transform-box: fill-box; transform-origin: center; animation: ping 2.6s cubic-bezier(0.22,1,0.36,1) 2.4s infinite backwards; }
         .login-submit { position: relative; overflow: hidden; isolation: isolate; }
         .login-submit::after { content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 50%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.4), transparent); transform: skewX(-20deg); z-index: -1; opacity: 0; }
         .login-submit:hover:not(:disabled)::after { animation: loginShine .9s cubic-bezier(0.22,1,0.36,1); }
         .login-submit:active:not(:disabled) { transform: scale(0.98); }
-        /* Dreamy gold glow */
-        .login-headline span.line:nth-child(2) { text-shadow: 0 0 24px rgba(216,188,134,0.40), 0 0 3px rgba(216,188,134,0.30); }
-        .login-submit:not(:disabled) { animation: loginGlow 6s ease-in-out infinite; }
-        .login-submit:hover:not(:disabled) { animation: none; box-shadow: 0 0 36px -2px rgba(216,188,134,0.65), 0 0 2px rgba(216,188,134,0.5); }
-        .login-logo { animation: loginLogoGlow 6s ease-in-out infinite; }
-        .login-route { filter: drop-shadow(0 0 4px rgba(216,188,134,0.45)); }
-        @keyframes loginGlow {
-          0%, 100% { box-shadow: 0 0 22px -4px rgba(216,188,134,0.45), 0 0 1px rgba(216,188,134,0.35); }
-          50%      { box-shadow: 0 0 34px -2px rgba(216,188,134,0.62), 0 0 2px rgba(216,188,134,0.45); }
-        }
-        @keyframes loginLogoGlow {
-          0%, 100% { box-shadow: 0 6px 18px -6px rgba(216,188,134,0.55), 0 0 18px -2px rgba(216,188,134,0.30), inset 0 1px 0 rgba(255,255,255,0.35); }
-          50%      { box-shadow: 0 6px 22px -4px rgba(216,188,134,0.75), 0 0 30px 0 rgba(216,188,134,0.45), inset 0 1px 0 rgba(255,255,255,0.35); }
-        }
+        /* Subtle, static gold glow */
+        .login-headline span.line:nth-child(2) { text-shadow: 0 0 18px rgba(216,188,134,0.50), 0 0 3px rgba(216,188,134,0.32); }
+        .login-submit:not(:disabled) { box-shadow: 0 0 28px -4px rgba(216,188,134,0.58), 0 0 2px rgba(216,188,134,0.42); }
+        .login-submit:hover:not(:disabled) { box-shadow: 0 0 36px -3px rgba(216,188,134,0.70), 0 0 3px rgba(216,188,134,0.52); }
+        .login-logo { box-shadow: 0 6px 22px -6px rgba(216,188,134,0.70), 0 0 28px -2px rgba(216,188,134,0.48), inset 0 1px 0 rgba(255,255,255,0.35) !important; }
+        .login-route { filter: drop-shadow(0 0 12px rgba(216,188,134,0.95)); }
         @keyframes loginRise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
-        @keyframes drawRoute { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
-        @keyframes ping { 0% { transform: scale(1); opacity: .7; } 70%, 100% { transform: scale(3.2); opacity: 0; } }
         @keyframes loginShine { 0% { left: -60%; opacity: 1; } 100% { left: 130%; opacity: 1; } }
+        @keyframes drawRoute { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
         @media (prefers-reduced-motion: reduce) {
-          .login-in > *, .login-headline span.line, .login-route, .route-ping { animation: none !important; }
+          .login-in > *, .login-headline span.line, .login-route { animation: none !important; }
         }
         @media (max-width: 900px) {
           .login-brand { flex-basis: 100% !important; min-height: auto !important; padding: 32px 24px !important; border-right: 0 !important; border-bottom: 1px solid ${C.line}; }
@@ -137,14 +128,17 @@ export default function Login() {
         }
       `}</style>
 
+      <TopographicBackground forceDark />
+
       {/* ── Brand panel ── */}
       <section className="login-brand" style={{
+        position: 'relative',
         flex: '1 1 560px',
         minHeight: '100vh',
         padding: '56px 64px',
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 48,
         borderRight: `1px solid ${C.line}`,
-        background: 'radial-gradient(120% 80% at 0% 100%, #17150F 0%, #0A0A0B 60%)',
+        background: 'radial-gradient(120% 80% at 0% 100%, rgba(23,21,15,0.9) 0%, transparent 60%)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div className="login-logo" style={{
@@ -163,7 +157,6 @@ export default function Login() {
           <path d="M20 240 C 180 240, 240 160, 360 150 S 500 120, 540 110" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1" />
           <circle cx="20" cy="220" r="5" fill={C.bg} stroke={C.gold} strokeWidth="1.4" />
           <circle cx="300" cy="90" r="3" fill={C.gold} />
-          <circle className="route-ping" cx="540" cy="30" r="5" fill={C.gold} />
           <circle cx="540" cy="30" r="5" fill={C.gold} />
         </svg>
 
@@ -180,6 +173,7 @@ export default function Login() {
 
       {/* ── Form ── */}
       <section style={{
+        position: 'relative',
         flex: '1 1 440px',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '56px 24px',

@@ -633,12 +633,8 @@ tbody tr:nth-child(n+9){ animation-delay: 0.44s; }
 /* Badges pop in */
 .badge { animation: badgeIn 0.45s var(--ease-spring) backwards; animation-delay: 0.2s; }
 
-/* Gold pulse for live dots (alerts) */
+/* Alert dot (static; glow comes from the gold-glow rules) */
 .pulse-dot { position: relative; }
-.pulse-dot::after {
-  content: ''; position: absolute; inset: 0; border-radius: 50%;
-  background: inherit; animation: pulse 2.4s var(--ease-out) infinite;
-}
 
 /* Modals — overlay fades, panel scales up; phones get a bottom-sheet slide */
 .modal-overlay { animation: fadeIn 0.25s ease; }
@@ -708,6 +704,12 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 [data-theme="light"] .topo-dark  { display: none; }
 [data-theme="light"] .topo-light { display: block; opacity: 0.28; }
 
+/* Pages that are always dark (sign-in) keep the gold artwork in any theme */
+.topo-force-dark .topo-dark,
+.topo-force-dark .topo-glow-dark  { display: block !important; }
+.topo-force-dark .topo-light,
+.topo-force-dark .topo-glow-light { display: none !important; }
+
 /* Glow layer: a few lines softly breathe in and out */
 .topo-glow       { -webkit-mask-image: none; mask-image: none; }
 .topo-glow-dark  { background-image: url('./assets/topo-glow-dark.svg');  opacity: 0.5; }
@@ -720,14 +722,14 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 .main-content { position: relative; }
 
 /* ══════════════════════════════════════════════
-   DREAMY GOLD GLOW (dark mode only)
+   SUBTLE GOLD GLOW (dark mode only, static)
 ══════════════════════════════════════════════ */
 :root {
-  --glow-text:  0 0 14px rgba(216,188,134,0.38), 0 0 2px rgba(216,188,134,0.30);
-  --glow-text-strong: 0 0 22px rgba(216,188,134,0.55), 0 0 3px rgba(216,188,134,0.40);
-  --glow-box:   0 0 22px -4px rgba(216,188,134,0.45), 0 0 1px rgba(216,188,134,0.35);
-  --glow-box-strong: 0 0 34px -2px rgba(216,188,134,0.60), 0 0 2px rgba(216,188,134,0.45);
-  --glow-icon:  drop-shadow(0 0 5px rgba(216,188,134,0.55));
+  --glow-text:      0 0 18px rgba(216,188,134,0.50), 0 0 3px rgba(216,188,134,0.32);
+  --glow-box:       0 0 28px -4px rgba(216,188,134,0.58), 0 0 2px rgba(216,188,134,0.42);
+  --glow-box-hover: 0 0 36px -3px rgba(216,188,134,0.70), 0 0 3px rgba(216,188,134,0.52);
+  --glow-icon:      drop-shadow(0 0 12px rgba(216,188,134,0.95));
+  --glow-dot:       0 0 12px rgba(216,188,134,0.95);
 }
 
 /* Gold text: revenue figure, load numbers, links, accents */
@@ -736,34 +738,20 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 :root:not([data-theme="light"]) .badge-invoiced {
   text-shadow: var(--glow-text);
 }
-/* Gold icons and chart bars */
+/* Gold icons */
 :root:not([data-theme="light"]) svg[stroke="var(--accent)"],
-:root:not([data-theme="light"]) svg[color="var(--accent)"],
-:root:not([data-theme="light"]) .recharts-bar-rectangle path {
+:root:not([data-theme="light"]) svg[color="var(--accent)"] {
   filter: var(--glow-icon);
 }
-/* Gold surfaces: primary buttons, invoiced badges, gold dots */
+/* Analytics chart bars: a much softer glow so the chart stays crisp */
+:root:not([data-theme="light"]) .recharts-bar-rectangle path {
+  filter: drop-shadow(0 0 2px rgba(216,188,134,0.22));
+}
+/* Gold surfaces: primary buttons and gold dots (static — no pulsing) */
 :root:not([data-theme="light"]) .btn-primary:not(:disabled) { box-shadow: var(--glow-box); }
-:root:not([data-theme="light"]) .btn-primary:hover:not(:disabled) { box-shadow: var(--glow-box-strong); }
-:root:not([data-theme="light"]) .badge-invoiced { box-shadow: 0 0 16px -4px rgba(216,188,134,0.35); }
+:root:not([data-theme="light"]) .btn-primary:hover:not(:disabled) { box-shadow: var(--glow-box-hover); }
 :root:not([data-theme="light"]) .badge-invoiced::before,
-:root:not([data-theme="light"]) .pulse-dot { box-shadow: 0 0 8px rgba(216,188,134,0.8); }
-
-/* A few hero pieces breathe slowly */
-:root:not([data-theme="light"]) .stat-card.orange:first-child .stat-value {
-  animation: goldTextBreath 6s ease-in-out infinite;
-}
-:root:not([data-theme="light"]) .btn-primary:not(:disabled):not(:hover) {
-  animation: goldBoxBreath 6s ease-in-out infinite;
-}
-@keyframes goldTextBreath {
-  0%, 100% { text-shadow: var(--glow-text); }
-  50%      { text-shadow: var(--glow-text-strong); }
-}
-@keyframes goldBoxBreath {
-  0%, 100% { box-shadow: var(--glow-box); }
-  50%      { box-shadow: var(--glow-box-strong); }
-}
+:root:not([data-theme="light"]) .pulse-dot { box-shadow: var(--glow-dot); }
 
 /* ══════════════════════════════════════════════
    LAYOUT
