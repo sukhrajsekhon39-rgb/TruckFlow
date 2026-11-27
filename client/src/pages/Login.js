@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { authApi } from '../utils/api';
 import TopographicBackground from '../components/TopographicBackground';
+import { LogoMark, Wordmark } from '../components/Brand';
 
 // The sign-in page is always obsidian, whatever theme the app is set to.
 const C = {
@@ -141,15 +142,8 @@ export default function Login() {
         background: 'radial-gradient(120% 80% at 0% 100%, rgba(23,21,15,0.9) 0%, transparent 60%)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div className="login-logo" style={{
-            width: 44, height: 44, borderRadius: 12,
-            background: 'linear-gradient(145deg, #E6CC98 0%, #C9A86C 100%)',
-            boxShadow: '0 6px 18px -6px rgba(216,188,134,0.55), inset 0 1px 0 rgba(255,255,255,0.35)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.bg,
-          }}>
-            <Zap size={22} strokeWidth={2} fill={C.bg} />
-          </div>
-          <div style={{ fontFamily: SERIF, fontSize: 32, lineHeight: 1 }}>TruckFlow</div>
+          <LogoMark size={44} className="login-logo" />
+          <Wordmark size={32} color={C.text} />
         </div>
 
         <svg className="login-route" viewBox="0 0 560 260" style={{ width: '100%', maxWidth: 560, height: 'auto' }} aria-hidden="true">

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import TopographicBackground from './TopographicBackground';
+import { LogoMark, Wordmark } from './Brand';
 import {
   LayoutDashboard, Package, Users, Truck, Container,
   Building2, BarChart3, Settings, ChevronLeft, ChevronRight,
-  Zap, X, Menu, LogOut, Plus,
+  X, Menu, LogOut, Plus,
 } from 'lucide-react';
 
 const navItems = [
@@ -60,24 +61,9 @@ const C = {
   goldLine:'rgba(216,188,134,0.5)',
   red:     '#E99595',
 };
-const SERIF = "'Instrument Serif', Georgia, serif";
 
 function initials(name) {
   return (name || 'A').trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
-}
-
-function LogoMark({ size = 40 }) {
-  return (
-    <div className="logo-mark" style={{
-      width: size, height: size, borderRadius: size * 0.28,
-      background: 'linear-gradient(145deg, #E6CC98 0%, #C9A86C 100%)',
-      boxShadow: '0 6px 18px -6px rgba(216,188,134,0.55), inset 0 1px 0 rgba(255,255,255,0.35)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0, color: '#0A0A0B',
-    }}>
-      <Zap size={size * 0.5} strokeWidth={2} fill="#0A0A0B" />
-    </div>
-  );
 }
 
 export default function Layout() {
@@ -267,8 +253,8 @@ export default function Layout() {
             <LogoMark />
             {!collapsed && (
               <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontFamily: SERIF, fontSize: 28, lineHeight: 1, color: C.text }}>
-                  TruckFlow
+                <div style={{ lineHeight: 1 }}>
+                  <Wordmark size={28} color={C.text} />
                 </div>
                 <div style={{
                   fontSize: 11, fontWeight: 600, color: C.faint, marginTop: 6,
@@ -365,9 +351,7 @@ export default function Layout() {
         >
           <div className="logo-link" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <LogoMark size={32} />
-            <span style={{ fontFamily: SERIF, fontSize: 25, lineHeight: 1, color: C.text }}>
-              TruckFlow
-            </span>
+            <Wordmark size={25} color={C.text} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <button
