@@ -710,12 +710,46 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 .topo-force-dark .topo-light,
 .topo-force-dark .topo-glow-light { display: none !important; }
 
-/* Glow layer: a few lines softly breathe in and out */
-.topo-glow       { -webkit-mask-image: none; mask-image: none; }
-.topo-glow-dark  { background-image: url('./assets/topo-glow-dark.svg');  opacity: 0.5; }
-.topo-glow-light { background-image: url('./assets/topo-glow-light.svg'); opacity: 0.4; display: none; }
+/* Glow layer: four lines softly breathe in and out.
+   Each line is a static image faded with opacity (GPU-composited, cheap). */
+.topo-glow       { position: absolute; inset: 0; }
+.topo-glow-dark  { opacity: 0.5; }
+.topo-glow-light { opacity: 0.4; display: none; }
 [data-theme="light"] .topo-glow-dark  { display: none; }
 [data-theme="light"] .topo-glow-light { display: block; }
+
+.topo-glow-line {
+  position: absolute; inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0.08;
+  will-change: opacity;
+  animation: topoBreathe 10s infinite;
+  /* Small steps (~6 updates/sec, ~1.5% brightness each) instead of 60 per
+     second: looks the same, costs far less CPU on every device. */
+  animation-timing-function: steps(30, end);
+}
+.topo-glow-line.g2 { animation-duration: 13s; animation-delay: -3.5s; }
+.topo-glow-line.g3 { animation-duration: 11s; animation-delay: -7s; }
+.topo-glow-line.g4 { animation-duration: 14s; animation-delay: -9.5s; }
+@keyframes topoBreathe {
+  0%, 100% { opacity: 0.08; }
+  50%      { opacity: 1; }
+}
+
+.topo-glow-dark  .g1 { background-image: url('./assets/topo-glow-dark-1.svg'); }
+.topo-glow-dark  .g2 { background-image: url('./assets/topo-glow-dark-2.svg'); }
+.topo-glow-dark  .g3 { background-image: url('./assets/topo-glow-dark-3.svg'); }
+.topo-glow-dark  .g4 { background-image: url('./assets/topo-glow-dark-4.svg'); }
+.topo-glow-light .g1 { background-image: url('./assets/topo-glow-light-1.svg'); }
+.topo-glow-light .g2 { background-image: url('./assets/topo-glow-light-2.svg'); }
+.topo-glow-light .g3 { background-image: url('./assets/topo-glow-light-3.svg'); }
+.topo-glow-light .g4 { background-image: url('./assets/topo-glow-light-4.svg'); }
+
+@media (prefers-reduced-motion: reduce) {
+  .topo-glow-line { animation: none; opacity: 0.5; }
+}
 
 /* Page content paints above the background (same layer, later in the page).
    No z-index here: that would trap pop-up forms below the mobile header/nav. */
