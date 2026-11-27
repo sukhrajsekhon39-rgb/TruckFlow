@@ -109,6 +109,20 @@ export default function Login() {
         .login-submit::after { content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 50%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.4), transparent); transform: skewX(-20deg); z-index: -1; opacity: 0; }
         .login-submit:hover:not(:disabled)::after { animation: loginShine .9s cubic-bezier(0.22,1,0.36,1); }
         .login-submit:active:not(:disabled) { transform: scale(0.98); }
+        /* Dreamy gold glow */
+        .login-headline span.line:nth-child(2) { text-shadow: 0 0 24px rgba(216,188,134,0.40), 0 0 3px rgba(216,188,134,0.30); }
+        .login-submit:not(:disabled) { animation: loginGlow 6s ease-in-out infinite; }
+        .login-submit:hover:not(:disabled) { animation: none; box-shadow: 0 0 36px -2px rgba(216,188,134,0.65), 0 0 2px rgba(216,188,134,0.5); }
+        .login-logo { animation: loginLogoGlow 6s ease-in-out infinite; }
+        .login-route { filter: drop-shadow(0 0 4px rgba(216,188,134,0.45)); }
+        @keyframes loginGlow {
+          0%, 100% { box-shadow: 0 0 22px -4px rgba(216,188,134,0.45), 0 0 1px rgba(216,188,134,0.35); }
+          50%      { box-shadow: 0 0 34px -2px rgba(216,188,134,0.62), 0 0 2px rgba(216,188,134,0.45); }
+        }
+        @keyframes loginLogoGlow {
+          0%, 100% { box-shadow: 0 6px 18px -6px rgba(216,188,134,0.55), 0 0 18px -2px rgba(216,188,134,0.30), inset 0 1px 0 rgba(255,255,255,0.35); }
+          50%      { box-shadow: 0 6px 22px -4px rgba(216,188,134,0.75), 0 0 30px 0 rgba(216,188,134,0.45), inset 0 1px 0 rgba(255,255,255,0.35); }
+        }
         @keyframes loginRise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
         @keyframes drawRoute { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
         @keyframes ping { 0% { transform: scale(1); opacity: .7; } 70%, 100% { transform: scale(3.2); opacity: 0; } }
@@ -133,7 +147,7 @@ export default function Login() {
         background: 'radial-gradient(120% 80% at 0% 100%, #17150F 0%, #0A0A0B 60%)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
+          <div className="login-logo" style={{
             width: 44, height: 44, borderRadius: 12,
             background: 'linear-gradient(145deg, #E6CC98 0%, #C9A86C 100%)',
             boxShadow: '0 6px 18px -6px rgba(216,188,134,0.55), inset 0 1px 0 rgba(255,255,255,0.35)',

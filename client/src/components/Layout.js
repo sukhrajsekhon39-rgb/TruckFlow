@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import TopographicBackground from './TopographicBackground';
 import {
   LayoutDashboard, Package, Users, Truck, Container,
   Building2, BarChart3, Settings, ChevronLeft, ChevronRight,
@@ -142,6 +143,16 @@ export default function Layout() {
         .side-anim > *:nth-child(9) { animation-delay: .37s; }
         @keyframes sideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
         .logo-mark { transition: transform .5s cubic-bezier(0.34,1.4,0.64,1), box-shadow .5s ease; }
+        /* Dreamy gold glow on the always-dark chrome */
+        .logo-mark { animation: logoGlow 6s ease-in-out infinite; }
+        @keyframes logoGlow {
+          0%, 100% { box-shadow: 0 6px 18px -6px rgba(216,188,134,0.55), 0 0 18px -2px rgba(216,188,134,0.30), inset 0 1px 0 rgba(255,255,255,0.35); }
+          50%      { box-shadow: 0 6px 22px -4px rgba(216,188,134,0.75), 0 0 30px 0 rgba(216,188,134,0.45), inset 0 1px 0 rgba(255,255,255,0.35); }
+        }
+        .nav-dot { box-shadow: 0 0 10px rgba(216,188,134,0.9), 0 0 3px rgba(216,188,134,0.9); }
+        .sidebar-nav-link svg[stroke="${C.gold}"], .side-anim svg[stroke="${C.gold}"] { filter: drop-shadow(0 0 5px rgba(216,188,134,0.6)); }
+        .bottom-nav-link.active { text-shadow: 0 0 12px rgba(216,188,134,0.55); }
+        .bottom-nav-link.active svg { filter: drop-shadow(0 0 6px rgba(216,188,134,0.6)); }
         .logo-link:hover .logo-mark { transform: rotate(-8deg) scale(1.06); box-shadow: 0 10px 26px -6px rgba(216,188,134,0.7), inset 0 1px 0 rgba(255,255,255,0.35) !important; }
         .bottom-nav-link svg { transition: transform .4s cubic-bezier(0.34,1.6,0.64,1); }
         .bottom-nav-link.active svg { transform: translateY(-2px) scale(1.08); }
@@ -452,6 +463,7 @@ export default function Layout() {
           minWidth: 0, overflowX: 'hidden',
           background: 'var(--bg-primary)',
         }}>
+          <TopographicBackground />
           <div key={location.pathname} className="main-content page-enter" style={{ flex: 1 }}>
             <Outlet />
           </div>
