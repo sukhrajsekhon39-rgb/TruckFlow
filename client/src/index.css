@@ -715,8 +715,9 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 [data-theme="light"] .topo-glow-dark  { display: none; }
 [data-theme="light"] .topo-glow-light { display: block; }
 
-/* Page content sits above the background */
-.main-content { position: relative; z-index: 1; }
+/* Page content paints above the background (same layer, later in the page).
+   No z-index here: that would trap pop-up forms below the mobile header/nav. */
+.main-content { position: relative; }
 
 /* ══════════════════════════════════════════════
    DREAMY GOLD GLOW (dark mode only)
@@ -853,6 +854,5 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 }
 
 @media (max-width: 390px) {
-  .stats-grid   { grid-template-columns: 1fr !important; }
-  .main-content { padding: 16px 12px 96px 12px; }
+  .main-content { padding: calc(16px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(100px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
 }

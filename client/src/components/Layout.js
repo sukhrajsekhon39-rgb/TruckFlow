@@ -173,7 +173,7 @@ export default function Layout() {
           .mobile-header   { display: flex !important; }
           .mobile-bottom-nav { display: flex !important; }
           .main-content {
-            padding: 20px 16px 96px !important;
+            padding: calc(20px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(100px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)) !important;
             margin-top: 60px !important;
           }
           .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
@@ -193,8 +193,7 @@ export default function Layout() {
           table { min-width: 100%; width: max-content; }
         }
         @media (max-width: 390px) {
-          .stats-grid { grid-template-columns: 1fr !important; }
-          .main-content { padding: 16px 12px 96px !important; }
+          .main-content { padding: calc(16px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(100px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)) !important; }
         }
       `}</style>
 
@@ -344,7 +343,8 @@ export default function Layout() {
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
             borderBottom: `1px solid ${C.line}`,
-            padding: '0 16px', height: 60,
+            padding: 'env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px))',
+            height: 'calc(60px + env(safe-area-inset-top, 0px))',
             alignItems: 'center', justifyContent: 'space-between',
           }}
         >
@@ -393,7 +393,8 @@ export default function Layout() {
               }}
             />
             <div className="side-anim" style={{
-              position: 'fixed', top: 60, left: 0, right: 0, zIndex: 290,
+              position: 'fixed', top: 'calc(60px + env(safe-area-inset-top, 0px))', left: 0, right: 0, zIndex: 290,
+              maxHeight: 'calc(100dvh - 60px - env(safe-area-inset-top, 0px))', overflowY: 'auto',
               background: C.bg,
               borderBottom: `1px solid ${C.line}`,
               padding: '10px 12px 16px',
@@ -479,7 +480,7 @@ export default function Layout() {
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
             borderTop: `1px solid ${C.line}`,
-            padding: `8px 0 calc(8px + env(safe-area-inset-bottom))`,
+            padding: `8px env(safe-area-inset-right, 0px) calc(8px + env(safe-area-inset-bottom, 0px)) env(safe-area-inset-left, 0px)`,
             justifyContent: 'space-around',
             alignItems: 'center',
           }}

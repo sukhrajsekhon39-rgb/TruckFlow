@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { loadsApi, driversApi, trucksApi, trailersApi, brokersApi, milesApi } from '../utils/api';
-import { Plus, Search, Filter, Trash2, Eye, MapPin, Navigation, Package, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import { Plus, Search, Filter, Trash2, Eye, MapPin, Navigation, Package, ChevronUp, ChevronDown, ChevronsUpDown, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 
@@ -461,7 +461,10 @@ export default function Loads() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ color: 'var(--green)', fontWeight: 700 }}>{load.rate ? `$${load.rate.toLocaleString()}` : '—'}</span>
-                  <button className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--red)' }} onClick={e => handleDelete(load._id, e)}>
+                  <button className="btn btn-ghost btn-icon btn-sm" aria-label={`Edit ${load.loadNumber}`} onClick={e => { e.stopPropagation(); setEditLoad(load); setShowModal(true); }}>
+                    <Pencil size={14} />
+                  </button>
+                  <button className="btn btn-ghost btn-icon btn-sm" aria-label={`Delete ${load.loadNumber}`} style={{ color: 'var(--red)' }} onClick={e => handleDelete(load._id, e)}>
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -518,7 +521,7 @@ export default function Loads() {
                     <td>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button className="btn btn-ghost btn-icon btn-sm" onClick={() => navigate(`/loads/${load._id}`)}><Eye size={14} /></button>
-                        <button className="btn btn-ghost btn-icon btn-sm" onClick={e => { setEditLoad(load); setShowModal(true); e.stopPropagation(); }}>✏️</button>
+                        <button className="btn btn-ghost btn-icon btn-sm" aria-label={`Edit ${load.loadNumber}`} onClick={e => { setEditLoad(load); setShowModal(true); e.stopPropagation(); }}><Pencil size={14} /></button>
                         <button className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--red)' }} onClick={e => handleDelete(load._id, e)}><Trash2 size={14} /></button>
                       </div>
                     </td>

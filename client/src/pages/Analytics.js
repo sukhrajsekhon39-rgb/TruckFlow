@@ -197,10 +197,25 @@ function ChartTip({ active, payload }) {
   );
 }
 
-// Table you can sort by clicking a column heading
+// True on phone-sized screens; updates when the window is resized
+function useNarrow(max = 640) {
+  const query = `(max-width: ${max}px)`;
+  const [narrow, setNarrow] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const on = () => setNarrow(mq.matches);
+    mq.addEventListener ? mq.addEventListener('change', on) : mq.addListener(on);
+    return () => (mq.removeEventListener ? mq.removeEventListener('change', on) : mq.removeListener(on));
+  }, [query]);
+  return narrow;
+}
+
+// Table you can sort by clicking a column heading.
+// On phones each row becomes a card so no column is cut off the screen.
 function DataTable({ columns, rows, initialKey, limit = 10, onRowClick }) {
   const [sort, setSort] = useState({ key: initialKey, dir: 'desc' });
   const [all, setAll] = useState(false);
+  const narrow = useNarrow();
 
   const sorted = [...rows].sort((a, b) => {
     const av = a[sort.key];
@@ -212,8 +227,51 @@ function DataTable({ columns, rows, initialKey, limit = 10, onRowClick }) {
 
   const clickHead = key => setSort(s => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: key === 'name' ? 'asc' : 'desc' }));
 
+  const cell = (c, r) => (c.render ? c.render(r) : r[c.key]);
+  const [first, ...rest] = columns;
+
   return (
     <>
+      {narrow ? (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Sort by</span>
+            <select
+              className="form-control"
+              style={{ padding: '6px 12px', fontSize: 16, flex: 1, minWidth: 0 }}
+              value={sort.key}
+              onChange={e => setSort(s => ({ key: e.target.value, dir: s.dir }))}
+            >
+              {columns.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+            </select>
+            <button
+              className="btn btn-secondary btn-sm btn-icon"
+              aria-label={sort.dir === 'asc' ? 'Sorted ascending' : 'Sorted descending'}
+              onClick={() => setSort(s => ({ ...s, dir: s.dir === 'asc' ? 'desc' : 'asc' }))}
+            >
+              {sort.dir === 'asc' ? '▲' : '▼'}
+            </button>
+          </div>
+          {shown.map(r => (
+            <div
+              key={r.key}
+              className="data-card"
+              style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', cursor: onRowClick ? 'pointer' : undefined }}
+              onClick={onRowClick ? () => onRowClick(r) : undefined}
+            >
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8, overflowWrap: 'anywhere' }}>{cell(first, r)}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px 14px' }}>
+                {rest.map(c => (
+                  <div key={c.key} style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{c.label}</div>
+                    <div style={{ fontSize: 14.5, color: 'var(--text-secondary)', overflowWrap: 'anywhere' }}>{cell(c, r)}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
       <div className="table-container">
         <table>
           <thead>
@@ -234,6 +292,7 @@ function DataTable({ columns, rows, initialKey, limit = 10, onRowClick }) {
           </tbody>
         </table>
       </div>
+      )}
       {rows.length > limit && (
         <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border)' }}>
           <button className="btn btn-ghost btn-sm" onClick={() => setAll(v => !v)}>{all ? `Show top ${limit}` : `Show all ${rows.length}`}</button>
@@ -437,7 +496,7 @@ export default function Analytics() {
       ) : (
         <div style={{ opacity: fetching ? 0.55 : 1, transition: 'opacity .15s' }}>
           {/* KPIs with comparison to the previous period */}
-          <div className="stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginBottom: 20 }}>
+          <div className="stagger stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginBottom: 20 }}>
             {kpis.map(k => (
               <div key={k.label} className={`stat-card ${k.color}`} title={k.hint}>
                 <div className="stat-label">{k.label}</div>
