@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const loadSchema = new mongoose.Schema({
-  loadNumber: { type: String, required: true, unique: true },
+  company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true, index: true },
+  loadNumber: { type: String, required: true, trim: true },
   status: { type: String, enum: ['Pending', 'In Transit', 'Delivered', 'Invoiced', 'Paid'], default: 'Pending' },
   driver: { type: mongoose.Schema.Types.ObjectId, ref: 'Driver' },
   truck: { type: mongoose.Schema.Types.ObjectId, ref: 'Truck' },
@@ -38,5 +39,8 @@ loadSchema.pre('save', function(next) {
     : 0;
   next();
 });
+
+// Numbers only need to be unique within a company
+loadSchema.index({ company: 1, loadNumber: 1 }, { unique: true });
 
 module.exports = mongoose.model('Load', loadSchema);

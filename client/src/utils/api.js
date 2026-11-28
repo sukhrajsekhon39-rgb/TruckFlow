@@ -1,30 +1,40 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: '/api' });
+// The session lives in an httpOnly cookie the browser sends automatically.
+// The custom header proves the request came from our own pages (CSRF protection).
+const api = axios.create({ baseURL: '/api', headers: { 'X-Requested-With': 'TruckFlow' } });
 
-// Attach JWT token to every request
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('tf-token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+// When the session ends, tell the app so it can show the sign-in page
+let onSessionEnded = () => {};
+export const setSessionEndedHandler = fn => { onSessionEnded = fn; };
 
-// If any request gets 401, clear token and reload to show login
 api.interceptors.response.use(
   res => res,
   err => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('tf-token');
-      localStorage.removeItem('tf-user');
-      window.location.href = '/login';
-    }
+    const url = err.config?.url || '';
+    const isAuthCall = /^\/?auth\/(login|signup|forgot|reset|me)$/.test(url);
+    if (err.response?.status === 401 && !isAuthCall) onSessionEnded();
     return Promise.reject(err);
   }
 );
 
+// Readable message from an API error
+export const apiError = (err, fallback = 'Something went wrong. Please try again.') =>
+  err?.response?.data?.error || (err?.response ? fallback : 'Can’t reach TruckFlow. Check your connection and try again.');
+
 export const authApi = {
-  login: (data) => axios.post('/api/auth/login', data),
-  verify: () => api.get('/api/auth/verify'),
+  me:             () => api.get('/auth/me'),
+  signup:         (data) => api.post('/auth/signup', data),
+  login:          (data) => api.post('/auth/login', data),
+  logout:         () => api.post('/auth/logout'),
+  logoutAll:      () => api.post('/auth/logout-all'),
+  forgot:         (email) => api.post('/auth/forgot', { email }),
+  reset:          (token, password) => api.post('/auth/reset', { token, password }),
+  updateMe:       (data) => api.patch('/auth/me', data),
+  changePassword: (currentPassword, newPassword) => api.post('/auth/password', { currentPassword, newPassword }),
+  getCompany:     () => api.get('/auth/company'),
+  updateCompany:  (data) => api.put('/auth/company', data),
+  deleteAccount:  (password) => api.delete('/auth/account', { data: { password } }),
 };
 
 export const loadsApi = {
@@ -73,7 +83,7 @@ export const analyticsApi = {
 };
 
 export const invoicesApi = {
-  generate: (loadId, companyInfo) => api.post(`/invoices/generate/${loadId}`, { companyInfo }),
+  generate: (loadId) => api.post(`/invoices/generate/${loadId}`, {}, { responseType: 'blob' }),
 };
 
 export const milesApi = {

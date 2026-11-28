@@ -64,3 +64,6 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Uploaded customer documents (never commit)
+server/uploads/

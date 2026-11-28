@@ -2,11 +2,14 @@ const express = require('express');
 const router = express.Router();
 const PDFDocument = require('pdfkit');
 const Load = require('../models/Load');
+const Company = require('../models/Company');
+const { isId, serverError } = require('../utils/security');
 const { renderInvoice } = require('../utils/invoicePdf');
 
 router.post('/generate/:loadId', async (req, res) => {
   try {
-    const load = await Load.findById(req.params.loadId)
+    if (!isId(req.params.loadId)) return res.status(404).json({ error: 'Load not found' });
+    const load = await Load.findOne({ _id: req.params.loadId, company: req.companyId })
       .populate('driver')
       .populate('truck')
       .populate('trailer')
@@ -14,7 +17,8 @@ router.post('/generate/:loadId', async (req, res) => {
 
     if (!load) return res.status(404).json({ error: 'Load not found' });
 
-    const companyInfo = req.body.companyInfo || {};
+    // The invoice header always comes from the signed-in company's own profile
+    const companyInfo = (await Company.findById(req.companyId).lean()) || {};
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="invoice-${load.loadNumber}.pdf"`);
@@ -39,7 +43,7 @@ router.post('/generate/:loadId', async (req, res) => {
 
   } catch (err) {
     console.error('Invoice error:', err);
-    if (!res.headersSent) res.status(500).json({ error: err.message });
+    if (!res.headersSent) serverError(res, err);
   }
 });
 

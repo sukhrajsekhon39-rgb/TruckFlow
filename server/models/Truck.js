@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const truckSchema = new mongoose.Schema({
-  unitNumber: { type: String, required: true, unique: true },
+  company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true, index: true },
+  unitNumber: { type: String, required: true, trim: true },
   make: String,
   model: String,
   year: Number,
@@ -15,5 +16,8 @@ const truckSchema = new mongoose.Schema({
   registrationExpiry: Date,
   notes: String,
 }, { timestamps: true });
+
+// Numbers only need to be unique within a company
+truckSchema.index({ company: 1, unitNumber: 1 }, { unique: true });
 
 module.exports = mongoose.model('Truck', truckSchema);

@@ -2,9 +2,14 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute, { GuestRoute } from './components/ProtectedRoute';
+import { AuthProvider } from './auth/AuthContext';
 import ScrollToTop from './components/ScrollToTop';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Loads from './pages/Loads';
 import LoadDetail from './pages/LoadDetail';
@@ -18,6 +23,7 @@ import Settings from './pages/Settings';
 export default function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
       <ScrollToTop />
       <Toaster
         position="top-right"
@@ -37,15 +43,18 @@ export default function App() {
       />
       <Routes>
         {/* Public */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+        <Route path="/signup" element={<GuestRoute><Signup /></GuestRoute>} />
+        <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Protected */}
-        <Route path="/" element={
+        {/* Signed-in app: every page only shows the signed-in company's data */}
+        <Route element={
           <ProtectedRoute>
             <Layout />
           </ProtectedRoute>
         }>
-          <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard"  element={<Dashboard />} />
           <Route path="loads"      element={<Loads />} />
           <Route path="loads/:id"  element={<LoadDetail />} />
@@ -56,7 +65,10 @@ export default function App() {
           <Route path="analytics"  element={<Analytics />} />
           <Route path="settings"   element={<Settings />} />
         </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

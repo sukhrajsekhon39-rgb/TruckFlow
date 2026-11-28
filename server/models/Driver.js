@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const driverSchema = new mongoose.Schema({
+  company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true, index: true },
   name: { type: String, required: true },
   phone: String,
   email: String,

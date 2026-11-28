@@ -2,15 +2,16 @@ const express = require('express');
 const router = express.Router();
 const Load = require('../models/Load');
 const mongoose = require('mongoose');
+const { serverError } = require('../utils/security');
 
 router.get('/summary', async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    let dateFilter = {};
+    let dateFilter = { company: req.companyId };
     if (startDate || endDate) {
       dateFilter.createdAt = {};
-      if (startDate) dateFilter.createdAt.$gte = new Date(startDate);
-      if (endDate) dateFilter.createdAt.$lte = new Date(endDate);
+      if (startDate) dateFilter.createdAt.$gte = new Date(String(startDate));
+      if (endDate) dateFilter.createdAt.$lte = new Date(String(endDate));
     }
 
     const [totals, statusBreakdown, topDrivers, topBrokers, revenueByMonth, weeklyLoads] = await Promise.all([
@@ -57,7 +58,7 @@ router.get('/summary', async (req, res) => {
 
       // Revenue by month (last 12 months)
       Load.aggregate([
-        { $match: { createdAt: { $gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) } } },
+        { $match: { company: req.companyId, createdAt: { $gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) } } },
         { $group: {
           _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
           revenue: { $sum: '$rate' },
@@ -69,7 +70,7 @@ router.get('/summary', async (req, res) => {
 
       // Loads by day (last 30 days)
       Load.aggregate([
-        { $match: { createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } } },
+        { $match: { company: req.companyId, createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } } },
         { $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
           count: { $count: {} },
@@ -88,7 +89,7 @@ router.get('/summary', async (req, res) => {
       weeklyLoads,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(res, err);
   }
 });
 
@@ -104,6 +105,7 @@ router.get('/range', async (req, res) => {
 
     const field = req.query.by === 'delivery' ? 'delivery.scheduledTime' : 'pickup.scheduledTime';
     const query = {
+      company: req.companyId,
       $or: [
         { [field]: { $gte: s, $lt: e } },
         { [field]: null, createdAt: { $gte: s, $lt: e } }, // no scheduled date -> use created date
@@ -141,7 +143,7 @@ router.get('/range', async (req, res) => {
 
     res.json({ loads });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    serverError(res, err);
   }
 });
 

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { loadsApi } from '../utils/api';
+import api, { loadsApi } from '../utils/api';
+import { useAuth } from '../auth/AuthContext';
 import { ArrowLeft, FileText, Upload, Trash2, Download, Receipt, CheckCircle, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import PdfViewerModal from '../components/PdfViewerModal';
@@ -32,24 +33,16 @@ function InfoRow({ label, value }) {
   );
 }
 
-// Fetch a protected file (PDF/image) with the login token attached.
+// Fetch a protected file (PDF/image). The session cookie is sent automatically.
 async function fetchBlob(url, method = 'GET', body = null) {
-  const headers = { 'Content-Type': 'application/json' };
-  const token = localStorage.getItem('tf-token');
-  if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
-  if (res.status === 401) {
-    localStorage.removeItem('tf-token');
-    localStorage.removeItem('tf-user');
-    window.location.href = '/login';
-    throw new Error('Session expired — please sign in again');
-  }
-  if (!res.ok) {
-    let msg = `Request failed (${res.status})`;
-    try { msg = (await res.json()).error || msg; } catch {}
+  try {
+    const res = await api.request({ url: url.replace(/^\/api/, ''), method, data: body || undefined, responseType: 'blob' });
+    return res.data;
+  } catch (err) {
+    let msg = err.response ? `Request failed (${err.response.status})` : 'Can’t reach TruckFlow. Check your connection.';
+    try { msg = JSON.parse(await err.response.data.text()).error || msg; } catch {}
     throw new Error(msg);
   }
-  return res.blob();
 }
 
 async function blobDownload(url, filename, method = 'GET', body = null) {
@@ -126,10 +119,7 @@ export default function LoadDetail() {
   const [viewerDoc, setViewerDoc] = useState(null); // { url, filename, docId }
   const [generatingInvoice, setGeneratingInvoice] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
-  const [companyInfo, setCompanyInfo] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('companyInfo') || '{}'); }
-    catch { return {}; }
-  });
+  const { company } = useAuth();
 
   const fetchLoad = async () => {
     const res = await loadsApi.getById(id);
@@ -190,7 +180,7 @@ export default function LoadDetail() {
   const generateInvoice = async () => {
     setGeneratingInvoice(true);
     try {
-      await blobDownload(`/api/invoices/generate/${id}`, `invoice-${load.loadNumber}.pdf`, 'POST', { companyInfo });
+      await blobDownload(`/api/invoices/generate/${id}`, `invoice-${load.loadNumber}.pdf`, 'POST', {});
       toast.success('Invoice downloaded!');
       setShowInvoiceModal(false);
       fetchLoad();
@@ -358,17 +348,20 @@ export default function LoadDetail() {
               <button className="btn btn-ghost btn-icon" onClick={() => setShowInvoiceModal(false)}>✕</button>
             </div>
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Company info is saved automatically.</p>
-              {[['name','Company Name'],['address','Address'],['phone','Phone'],['email','Email'],['mc','MC Number'],['dot','DOT Number']].map(([key, label]) => (
-                <div key={key} className="form-group">
-                  <label className="form-label">{label}</label>
-                  <input className="form-control" value={companyInfo[key] || ''} onChange={e => {
-                    const updated = { ...companyInfo, [key]: e.target.value };
-                    setCompanyInfo(updated);
-                    localStorage.setItem('companyInfo', JSON.stringify(updated));
-                  }} />
-                </div>
-              ))}
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', margin: 0 }}>
+                The invoice header uses your company details. <Link to="/settings" style={{ color: 'var(--accent)' }}>Edit them in Settings</Link>.
+              </p>
+              <div className="pill-row" style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14 }}>
+                <strong style={{ fontSize: 15 }}>{company?.name}</strong>
+                {company?.address && <span style={{ color: 'var(--text-secondary)' }}>{company.address}</span>}
+                {[company?.phone, company?.email].filter(Boolean).length > 0 && <span style={{ color: 'var(--text-secondary)' }}>{[company.phone, company.email].filter(Boolean).join(' · ')}</span>}
+                {[company?.mc && `MC# ${company.mc}`, company?.dot && `DOT# ${company.dot}`].filter(Boolean).length > 0 && (
+                  <span className="mono" style={{ color: 'var(--text-muted)', fontSize: 13 }}>{[company.mc && `MC# ${company.mc}`, company.dot && `DOT# ${company.dot}`].filter(Boolean).join(' · ')}</span>
+                )}
+              </div>
+              {!company?.address && !company?.mc && (
+                <div className="settings-note">Your invoice will only show the company name. Add your address and MC number in Settings first.</div>
+              )}
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setShowInvoiceModal(false)}>Cancel</button>

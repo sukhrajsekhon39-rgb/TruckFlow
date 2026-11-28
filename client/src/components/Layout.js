@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import TopographicBackground from './TopographicBackground';
 import { LogoMark, Wordmark } from './Brand';
+import { useAuth } from '../auth/AuthContext';
 import {
   LayoutDashboard, Package, Users, Truck, Container,
   Building2, BarChart3, Settings, ChevronLeft, ChevronRight,
@@ -86,12 +87,13 @@ export default function Layout() {
   }, []);
 
   const closeMenu   = () => setMobileMenuOpen(false);
-  const username    = localStorage.getItem('tf-user') || 'Admin';
+  const { user, company, signOut } = useAuth();
+  const username    = user?.name || 'Account';
+  const companyName = company?.name || '';
 
-  const handleLogout = () => {
-    localStorage.removeItem('tf-token');
-    localStorage.removeItem('tf-user');
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login', { replace: true });
   };
 
   const S = {
@@ -315,7 +317,7 @@ export default function Layout() {
             {!collapsed && (
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 14, color: C.text, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</div>
-                <div style={{ fontSize: 12.5, color: C.faint }}>Signed in</div>
+                <div style={{ fontSize: 12.5, color: C.faint, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{companyName}</div>
               </div>
             )}
             <button className="sidebar-footer-btn" style={S.iconBtn} onClick={handleLogout} aria-label="Sign out" title="Sign out">
@@ -430,7 +432,7 @@ export default function Layout() {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, color: C.text, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</div>
-                  <div style={{ fontSize: 12.5, color: C.faint }}>Signed in</div>
+                  <div style={{ fontSize: 12.5, color: C.faint, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{companyName}</div>
                 </div>
                 <button
                   onClick={handleLogout}
