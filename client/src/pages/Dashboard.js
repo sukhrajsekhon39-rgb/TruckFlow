@@ -309,7 +309,7 @@ export default function Dashboard() {
       {/* Alert */}
       {pendingInvoice > 0 && (
         <div style={{
-          background: 'var(--accent-dim)', border: '1px solid var(--accent-border)',
+          background: 'var(--accent-dim)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius)', padding: '16px 22px',
           marginBottom: 32, display: 'flex', alignItems: 'center', gap: 14,
           fontSize: 13.5, color: 'var(--text-primary)', flexWrap: 'wrap',

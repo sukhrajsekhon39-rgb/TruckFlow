@@ -45,9 +45,9 @@ const addOptions = [
   { path: '/brokers',  icon: Building2, label: 'Broker',  sub: 'Company and contact' },
 ];
 
-// Fine fading gold frame for the floating chrome (always obsidian)
+// Floating chrome (always obsidian) with a plain, faint edge
 const GILD_FILL = 'linear-gradient(180deg,#141417,#0E0E10) padding-box';
-const GILD_EDGE = 'linear-gradient(160deg,rgba(216,188,134,0.55),rgba(216,188,134,0.06) 30%,rgba(255,255,255,0.04) 70%,rgba(216,188,134,0.30)) border-box';
+const GILD_EDGE = 'linear-gradient(rgba(255,255,255,0.08),rgba(255,255,255,0.08)) border-box';
 const GILD_DEPTH = 'inset 0 1px 0 rgba(255,255,255,0.05), 0 30px 60px -30px rgba(0,0,0,0.95)';
 
 // Sidebar palette — always obsidian so it reads as a frame in both themes
@@ -104,7 +104,6 @@ export default function Layout() {
       fontWeight: active ? 600 : 500,
       color: active ? C.text : C.dim,
       background: active ? 'linear-gradient(90deg,rgba(216,188,134,0.12),rgba(216,188,134,0.02))' : 'transparent',
-      boxShadow: active ? 'inset 0 0 0 1px rgba(216,188,134,0.22)' : 'none',
       transition: 'all 0.2s ease',
       cursor: 'pointer',
       textDecoration: 'none',
@@ -148,7 +147,7 @@ export default function Layout() {
         .nav-sep { height: 1px; margin: 10px 14px; background: rgba(216,188,134,0.18); }
         .nav-sep:first-child { display: none; }
         /* Phone dock */
-        .dock-link.active { background: rgba(216,188,134,0.10); box-shadow: inset 0 0 0 1px rgba(216,188,134,0.22); }
+        .dock-link.active { background: rgba(216,188,134,0.10); }
         .dock-fab { transition: transform .35s cubic-bezier(0.34,1.4,0.64,1), box-shadow .3s ease; }
         .dock-fab:active { transform: scale(0.92); }
         .dock-fab svg { transition: transform .35s cubic-bezier(0.34,1.4,0.64,1); }
