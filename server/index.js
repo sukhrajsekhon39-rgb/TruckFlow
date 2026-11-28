@@ -19,7 +19,14 @@ if (process.env.JWT_SECRET.length < 32) console.warn('⚠️  JWT_SECRET is shor
 const app = express();
 app.disable('x-powered-by');
 app.set('query parser', 'simple'); // ?a[b]=c stays a plain string, so it can't become a database operator
-if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY) || 1); // behind a load balancer
+// Which proxies may report the visitor's real IP (used by the rate limits).
+// On Render, its load balancer is the one hop in front of the app. Elsewhere the default is
+// only a proxy on this machine (the React dev server, or Nginx on the same box).
+// Other hosts with a load balancer (Heroku, Railway...): set TRUST_PROXY=1.
+const trustProxy = process.env.TRUST_PROXY
+  ? (Number(process.env.TRUST_PROXY) || process.env.TRUST_PROXY)
+  : (process.env.RENDER ? 1 : 'loopback');
+app.set('trust proxy', trustProxy);
 
 app.use(helmet({
   contentSecurityPolicy: {
