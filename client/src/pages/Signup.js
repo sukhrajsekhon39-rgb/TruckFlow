@@ -4,10 +4,12 @@ import { ArrowRight, Lock } from 'lucide-react';
 import { authApi, apiError } from '../utils/api';
 import { useAuth } from '../auth/AuthContext';
 import AuthShell, { AuthTitle, AuthField, PasswordRules, passwordOk, SubmitButton } from '../auth/AuthShell';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Signup() {
+  useDocumentTitle('Create your account');
   const navigate = useNavigate();
   const { signedIn } = useAuth();
   const [form, setForm] = useState({ name: '', companyName: '', email: '', password: '' });

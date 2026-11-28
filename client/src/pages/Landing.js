@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, Package, FileText, Receipt, Truck, BarChart3, Smartphone,
@@ -8,6 +8,7 @@ import TopographicBackground from '../components/TopographicBackground';
 import { LogoMark, Wordmark } from '../components/Brand';
 import { useAuth } from '../auth/AuthContext';
 import './landing.css';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 const STATUSES = [
   ['Pending', 'var(--yellow)', 'Booked and waiting for pickup'],
@@ -93,11 +94,7 @@ export default function Landing() {
   const { status } = useAuth();
   const signedIn = status === 'in';
 
-  useEffect(() => {
-    const prev = document.title;
-    document.title = 'TruckFlow · Fleet management for small carriers';
-    return () => { document.title = prev; };
-  }, []);
+  useDocumentTitle('Fleet management for small carriers');
 
   const primaryCta = signedIn
     ? <Link to="/dashboard" className="lp-btn lp-btn-gold">Open your dashboard<ArrowRight size={16} /></Link>

@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import DateTimePicker from '../components/DateTimePicker';
 import Select, { STATUS_DOTS } from '../components/Select';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 const STATUS_OPTIONS = ['Pending', 'In Transit', 'Delivered', 'Invoiced', 'Paid'];
 
@@ -304,6 +305,7 @@ export default function Loads() {
   const [editLoad, setEditLoad] = useState(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
+  useDocumentTitle(statusFilter ? `${statusFilter} loads` : 'Loads');
   const [sortField, setSortField] = useState('delivery.scheduledTime');
   const [sortDir, setSortDir] = useState('desc');
 

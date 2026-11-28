@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 import DateTimePicker from './DateTimePicker';
 import Select from './Select';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -16,6 +17,7 @@ function useIsMobile() {
 }
 
 export default function EntityPage({ title, api, fields, columns, emptyIcon }) {
+  useDocumentTitle(title);
   const isMobile = useIsMobile();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);

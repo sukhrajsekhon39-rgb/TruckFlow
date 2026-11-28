@@ -10,6 +10,7 @@ import {
 } from 'date-fns';
 import DateTimePicker from '../components/DateTimePicker';
 import Select, { STATUS_DOTS } from '../components/Select';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 const WEEK_OPTS = { weekStartsOn: 1 }; // 1 = Monday, change to 0 for Sunday
 const ALL_START = new Date(2000, 0, 1);
@@ -317,6 +318,7 @@ function Section({ title, note, children }) {
 
 // ---------- Page ----------
 export default function Analytics() {
+  useDocumentTitle('Analytics');
   const navigate = useNavigate();
   const [preset, setPreset] = useState('thisMonth');
   const [from, setFrom] = useState(() => format(startOfMonth(new Date()), 'yyyy-MM-dd'));

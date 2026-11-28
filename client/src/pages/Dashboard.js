@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import CountUp from '../components/CountUp';
 import { format, parse, startOfDay, startOfWeek, startOfMonth, addDays, addWeeks, addMonths } from 'date-fns';
 import DateTimePicker from '../components/DateTimePicker';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 function StatusBadge({ status }) {
   const map = { 'Pending': 'badge-pending', 'In Transit': 'badge-transit', 'Delivered': 'badge-delivered', 'Invoiced': 'badge-invoiced', 'Paid': 'badge-paid' };
@@ -278,6 +279,7 @@ function WorkSummary({ isMobile }) {
 }
 
 export default function Dashboard() {
+  useDocumentTitle('Dashboard');
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();

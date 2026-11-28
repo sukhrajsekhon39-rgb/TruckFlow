@@ -4,8 +4,10 @@ import { ArrowRight } from 'lucide-react';
 import { authApi, apiError } from '../utils/api';
 import { useAuth } from '../auth/AuthContext';
 import AuthShell, { AuthTitle, AuthField, PasswordRules, passwordOk, SubmitButton } from '../auth/AuthShell';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 export default function ResetPassword() {
+  useDocumentTitle('Choose a new password');
   const navigate = useNavigate();
   const { signedIn } = useAuth();
   const [params] = useSearchParams();

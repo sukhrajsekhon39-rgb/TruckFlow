@@ -7,6 +7,7 @@ import { ArrowLeft, FileText, Upload, Trash2, Download, Receipt, CheckCircle, Ey
 import { format } from 'date-fns';
 import PdfViewerModal from '../components/PdfViewerModal';
 import Select, { STATUS_DOTS } from '../components/Select';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -114,6 +115,8 @@ export default function LoadDetail() {
   const isMobile = useIsMobile();
   const [load, setLoad] = useState(null);
   const [loading, setLoading] = useState(true);
+  const route = [load?.pickup?.city, load?.delivery?.city].filter(Boolean).join(' → ');
+  useDocumentTitle(load ? [load.loadNumber, route].filter(Boolean).join(' · ') : 'Load');
   const [uploading, setUploading] = useState(false);
   const [pendingFile, setPendingFile] = useState(null);
   const [viewerDoc, setViewerDoc] = useState(null); // { url, filename, docId }

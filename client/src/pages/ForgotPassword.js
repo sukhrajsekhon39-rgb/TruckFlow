@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { authApi, apiError } from '../utils/api';
 import AuthShell, { AuthTitle, AuthField, SubmitButton } from '../auth/AuthShell';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 export default function ForgotPassword() {
+  useDocumentTitle('Reset your password');
   const [email, setEmail] = useState('');
   const [sentTo, setSentTo] = useState('');
   const [error, setError] = useState('');

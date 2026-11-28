@@ -4,8 +4,10 @@ import { ArrowRight } from 'lucide-react';
 import { authApi, apiError } from '../utils/api';
 import { useAuth } from '../auth/AuthContext';
 import AuthShell, { AuthTitle, AuthField, SubmitButton } from '../auth/AuthShell';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 export default function Login() {
+  useDocumentTitle('Sign in');
   const navigate = useNavigate();
   const location = useLocation();
   const { signedIn } = useAuth();

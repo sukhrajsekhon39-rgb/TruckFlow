@@ -5,6 +5,7 @@ import { Save, Building2, UserRound, KeyRound, MonitorSmartphone, AlertTriangle 
 import { authApi, apiError } from '../utils/api';
 import { useAuth } from '../auth/AuthContext';
 import { PasswordRules, passwordOk } from '../auth/AuthShell';
+import useDocumentTitle from '../utils/useDocumentTitle';
 
 function Section({ icon: Icon, title, sub, children, danger }) {
   return (
@@ -241,6 +242,7 @@ function DangerSection() {
 }
 
 export default function Settings() {
+  useDocumentTitle('Settings');
   const { company } = useAuth();
   return (
     <div className="page-enter">
